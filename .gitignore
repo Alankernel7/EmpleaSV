@@ -1,0 +1,49 @@
+# ========================
+# EmpleaSV - .gitignore
+# ========================
+
+# ----- Maven -----
+target/
+*.war
+*.jar
+!src/main/webapp/WEB-INF/lib/*.jar
+
+# ----- IntelliJ IDEA -----
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# ----- Smart Tomcat (plugin local) -----
+.smarttomcat/
+
+# ----- Eclipse -----
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache
+
+# ----- NetBeans -----
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+build/
+
+# ----- VS Code -----
+.vscode/
+
+# ----- Archivos de sistema -----
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ----- Archivos temporales -----
+*.log
+*.tmp
+*.bak
+*.swp
+*~

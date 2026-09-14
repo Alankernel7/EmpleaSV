@@ -1,13 +1,295 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EmpleaSV</title>
+    <title>EmpleaSV - Encuentra tu proximo empleo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
 </head>
 <body>
-    <h1>EmpleaSV</h1>
-    <p>El proyecto Java Web está funcionando correctamente.</p>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a class="nav-brand" href="${pageContext.request.contextPath}/index.jsp">
+                <span class="nav-brand-icon">E</span>
+                EmpleaSV
+            </a>
+            <button class="nav-toggle" onclick="document.getElementById('navCenter').classList.toggle('active')" aria-label="Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <div class="nav-center" id="navCenter">
+                <a class="nav-link active" href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
+                <a class="nav-link" href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas</a>
+                <a class="nav-link" href="${pageContext.request.contextPath}/empresas.jsp">Empresas</a>
+                <a class="nav-link" href="${pageContext.request.contextPath}/ayuda.jsp">Ayuda</a>
+            </div>
+            <div class="nav-actions">
+                <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-ghost btn-sm">Iniciar sesion</a>
+                <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-primary btn-sm">Registrarse</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Encuentra tu proximo empleo</h1>
+                    <p>Explora miles de ofertas de empleo en El Salvador. Tu oportunidad esta aqui.</p>
+                    <div class="hero-search">
+                        <div class="hero-search-input">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="text" placeholder="Puesto, empresa o palabra clave">
+                        </div>
+                        <div class="hero-search-input">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <input type="text" placeholder="Ubicacion">
+                        </div>
+                        <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-primary">Buscar empleos</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="stats-bar">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <h3>500+</h3>
+                        <p>Ofertas activas</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>200+</h3>
+                        <p>Empresas</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>1,000+</h3>
+                        <p>Candidatos</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>100+</h3>
+                        <p>Empleos nuevos</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ofertas destacadas -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Ofertas destacadas</h2>
+                    <p>Las mejores oportunidades de empleo seleccionadas para ti</p>
+                </div>
+                <div class="grid-3">
+                    <div class="featured-card">
+                        <div class="featured-card-badge"><span class="badge badge-success">Nueva</span></div>
+                        <div class="featured-card-icon">DT</div>
+                        <h4>Desarrollador Full Stack</h4>
+                        <p class="company">TechCorp El Salvador</p>
+                        <div class="card-meta">
+                            <span class="card-meta-item">San Salvador</span>
+                            <span class="card-meta-item">$1,500</span>
+                            <span class="card-meta-item">Tiempo completo</span>
+                        </div>
+                    </div>
+                    <div class="featured-card">
+                        <div class="featured-card-badge"><span class="badge badge-success">Nueva</span></div>
+                        <div class="featured-card-icon">DI</div>
+                        <h4>Disenador UI/UX</h4>
+                        <p class="company">Creative Studio</p>
+                        <div class="card-meta">
+                            <span class="card-meta-item">Santa Ana</span>
+                            <span class="card-meta-item">$1,200</span>
+                            <span class="card-meta-item">Tiempo completo</span>
+                        </div>
+                    </div>
+                    <div class="featured-card">
+                        <div class="featured-card-badge"><span class="badge badge-warning">Destacada</span></div>
+                        <div class="featured-card-icon">GM</div>
+                        <h4>Gerente de Marketing</h4>
+                        <p class="company">Grupo Meridian</p>
+                        <div class="card-meta">
+                            <span class="card-meta-item">San Salvador</span>
+                            <span class="card-meta-item">$2,000</span>
+                            <span class="card-meta-item">Tiempo completo</span>
+                        </div>
+                    </div>
+                    <div class="featured-card">
+                        <div class="featured-card-icon">AD</div>
+                        <h4>Analista de Datos</h4>
+                        <p class="company">DataVision SA</p>
+                        <div class="card-meta">
+                            <span class="card-meta-item">La Libertad</span>
+                            <span class="card-meta-item">$1,300</span>
+                            <span class="card-meta-item">Tiempo completo</span>
+                        </div>
+                    </div>
+                    <div class="featured-card">
+                        <div class="featured-card-icon">CF</div>
+                        <h4>Contador Fiscal</h4>
+                        <p class="company">Consultores Asociados</p>
+                        <div class="card-meta">
+                            <span class="card-meta-item">San Salvador</span>
+                            <span class="card-meta-item">$1,100</span>
+                            <span class="card-meta-item">Medio tiempo</span>
+                        </div>
+                    </div>
+                    <div class="featured-card">
+                        <div class="featured-card-icon">RS</div>
+                        <h4>Responsable de Soporte</h4>
+                        <p class="company">NetSolutions SV</p>
+                        <div class="card-meta">
+                            <span class="card-meta-item">San Miguel</span>
+                            <span class="card-meta-item">$900</span>
+                            <span class="card-meta-item">Tiempo completo</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-primary btn-lg">Ver todas las ofertas</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Empresas destacadas -->
+        <section class="section" style="background: var(--white); border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200);">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Empresas destacadas</h2>
+                    <p>Empresas que confian en EmpleaSV para encontrar talento</p>
+                </div>
+                <div class="grid-4">
+                    <div class="company-card">
+                        <div class="company-card-logo">TC</div>
+                        <h4>TechCorp SV</h4>
+                        <p>Tecnologia</p>
+                    </div>
+                    <div class="company-card">
+                        <div class="company-card-logo">GM</div>
+                        <h4>Grupo Meridian</h4>
+                        <p>Consultoria</p>
+                    </div>
+                    <div class="company-card">
+                        <div class="company-card-logo">DV</div>
+                        <h4>DataVision</h4>
+                        <p>Analitica</p>
+                    </div>
+                    <div class="company-card">
+                        <div class="company-card-logo">NS</div>
+                        <h4>NetSolutions</h4>
+                        <p>Internet</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Para candidatos -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Para candidatos</h2>
+                    <p>Encuentra la oportunidad perfecta para tu carrera</p>
+                </div>
+                <div class="grid-3">
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <h3>Busca empleo</h3>
+                        <p>Explora cientos de ofertas filtradas por ubicacion, salario y tipo de contrato.</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <h3>Crea tu perfil</h3>
+                        <p>Muestra tu experiencia, habilidades y educacion a las mejores empresas.</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        </div>
+                        <h3>Postulate</h3>
+                        <p>Envia tu postulacion con un solo clic y da el siguiente paso en tu carrera.</p>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-primary btn-lg">Crear cuenta gratis</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Para empresas -->
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-card">
+                    <div class="cta-card-content">
+                        <h2>Encuentra al talento que necesitas</h2>
+                        <p>Publica tus ofertas y conecta con los mejores profesionales de El Salvador.</p>
+                        <div class="flex gap-1" style="flex-wrap:wrap;">
+                            <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-lg">Publicar oferta</a>
+                            <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-outline btn-lg">Iniciar sesion</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">EmpleaSV</div>
+                    <p class="footer-desc">Plataforma de oportunidades laborales para El Salvador. Conectamos talento con las mejores empresas del pais.</p>
+                </div>
+                <div>
+                    <div class="footer-title">Plataforma</div>
+                    <ul class="footer-links">
+                        <li><a href="${pageContext.request.contextPath}/index.jsp">Inicio</a></li>
+                        <li><a href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas de empleo</a></li>
+                        <li><a href="${pageContext.request.contextPath}/empresas.jsp">Empresas</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-title">Candidatos</div>
+                    <ul class="footer-links">
+                        <li><a href="${pageContext.request.contextPath}/perfil-candidato.jsp">Mi perfil</a></li>
+                        <li><a href="${pageContext.request.contextPath}/mis-postulaciones.jsp">Mis postulaciones</a></li>
+                        <li><a href="${pageContext.request.contextPath}/ofertas-guardadas.jsp">Ofertas guardadas</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-title">Soporte</div>
+                    <ul class="footer-links">
+                        <li><a href="${pageContext.request.contextPath}/ayuda.jsp">Ayuda</a></li>
+                        <li><a href="${pageContext.request.contextPath}/ayuda.jsp#nosotros">Nosotros</a></li>
+                        <li><a href="${pageContext.request.contextPath}/ayuda.jsp#contacto">Contacto</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 EmpleaSV. Todos los derechos reservados.</span>
+                <div class="footer-bottom-links">
+                    <a href="#">Terminos</a>
+                    <a href="#">Privacidad</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        window.addEventListener('scroll', function() {
+            var navbar = document.getElementById('navbar');
+            if (window.scrollY > 10) { navbar.classList.add('scrolled'); } else { navbar.classList.remove('scrolled'); }
+        });
+    </script>
 </body>
 </html>

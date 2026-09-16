@@ -1,7 +1,21 @@
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+<%@ page import="com.empleasv.dao.OfertaEmpleoDAO" %>
+
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
+<%
+    OfertaEmpleoDAO ofertaDAO = new OfertaEmpleoDAO();
+
+    request.setAttribute(
+        "ofertasDestacadas",
+        ofertaDAO.listarDestacadas()
+    );
+%>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>

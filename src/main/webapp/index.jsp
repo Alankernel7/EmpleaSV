@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -88,69 +90,59 @@
                     <p>Las mejores oportunidades de empleo seleccionadas para ti</p>
                 </div>
                 <div class="grid-3">
-                    <div class="featured-card">
-                        <div class="featured-card-badge"><span class="badge badge-success">Nueva</span></div>
-                        <div class="featured-card-icon">DT</div>
-                        <h4>Desarrollador Full Stack</h4>
-                        <p class="company">TechCorp El Salvador</p>
-                        <div class="card-meta">
-                            <span class="card-meta-item">San Salvador</span>
-                            <span class="card-meta-item">$1,500</span>
-                            <span class="card-meta-item">Tiempo completo</span>
+                    <c:forEach var="oferta" items="${ofertasDestacadas}" end="5">
+
+                        <c:set var="palabrasTitulo" value="${fn:split(oferta.titulo, ' ')}" />
+
+                        <c:set
+                            var="inicial1"
+                            value="${fn:toUpperCase(fn:substring(palabrasTitulo[0], 0, 1))}"
+                        />
+
+                        <c:set var="inicial2" value="" />
+
+                        <c:if test="${fn:length(palabrasTitulo) > 1}">
+                            <c:set
+                                var="inicial2"
+                                value="${fn:toUpperCase(fn:substring(palabrasTitulo[1], 0, 1))}"
+                            />
+                        </c:if>
+
+                        <div class="featured-card">
+                            <div class="featured-card-badge">
+                                <span class="badge badge-success">
+                                    Nueva
+                                </span>
+                            </div>
+
+                            <div class="featured-card-icon">${inicial1}${inicial2}</div>
+
+                            <h4>${oferta.titulo}</h4>
+
+                            <p class="company">
+                                ${oferta.empresa.nombre}
+                            </p>
+
+                            <div class="card-meta">
+
+                                <span class="card-meta-item">
+                                    ${oferta.ubicacion}
+                                </span>
+
+                                <span class="card-meta-item">
+                                    $<fmt:formatNumber
+                                        value="${oferta.salario}"
+                                        minFractionDigits="2"
+                                        maxFractionDigits="2"
+                                    />
+                                </span>
+
+                                <span class="card-meta-item">
+                                    ${oferta.tipoContrato}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="featured-card">
-                        <div class="featured-card-badge"><span class="badge badge-success">Nueva</span></div>
-                        <div class="featured-card-icon">DI</div>
-                        <h4>Disenador UI/UX</h4>
-                        <p class="company">Creative Studio</p>
-                        <div class="card-meta">
-                            <span class="card-meta-item">Santa Ana</span>
-                            <span class="card-meta-item">$1,200</span>
-                            <span class="card-meta-item">Tiempo completo</span>
-                        </div>
-                    </div>
-                    <div class="featured-card">
-                        <div class="featured-card-badge"><span class="badge badge-warning">Destacada</span></div>
-                        <div class="featured-card-icon">GM</div>
-                        <h4>Gerente de Marketing</h4>
-                        <p class="company">Grupo Meridian</p>
-                        <div class="card-meta">
-                            <span class="card-meta-item">San Salvador</span>
-                            <span class="card-meta-item">$2,000</span>
-                            <span class="card-meta-item">Tiempo completo</span>
-                        </div>
-                    </div>
-                    <div class="featured-card">
-                        <div class="featured-card-icon">AD</div>
-                        <h4>Analista de Datos</h4>
-                        <p class="company">DataVision SA</p>
-                        <div class="card-meta">
-                            <span class="card-meta-item">La Libertad</span>
-                            <span class="card-meta-item">$1,300</span>
-                            <span class="card-meta-item">Tiempo completo</span>
-                        </div>
-                    </div>
-                    <div class="featured-card">
-                        <div class="featured-card-icon">CF</div>
-                        <h4>Contador Fiscal</h4>
-                        <p class="company">Consultores Asociados</p>
-                        <div class="card-meta">
-                            <span class="card-meta-item">San Salvador</span>
-                            <span class="card-meta-item">$1,100</span>
-                            <span class="card-meta-item">Medio tiempo</span>
-                        </div>
-                    </div>
-                    <div class="featured-card">
-                        <div class="featured-card-icon">RS</div>
-                        <h4>Responsable de Soporte</h4>
-                        <p class="company">NetSolutions SV</p>
-                        <div class="card-meta">
-                            <span class="card-meta-item">San Miguel</span>
-                            <span class="card-meta-item">$900</span>
-                            <span class="card-meta-item">Tiempo completo</span>
-                        </div>
-                    </div>
+                    </c:forEach>
                 </div>
                 <div class="text-center mt-3">
                     <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-primary btn-lg">Ver todas las ofertas</a>

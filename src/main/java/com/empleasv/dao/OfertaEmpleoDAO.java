@@ -66,6 +66,7 @@ public class OfertaEmpleoDAO {
         return ofertas;
     }
 
+
     // Obtiene una oferta por su ID
     public OfertaEmpleo obtenerPorId(int id) {
         String sql = "SELECT id, titulo, descripcion, requisitos, ubicacion, salario, "
@@ -89,6 +90,47 @@ public class OfertaEmpleoDAO {
         }
 
         return oferta;
+    }
+
+    // Lista las ofertas activas más recientes para mostrar en el inicio
+    public List<OfertaEmpleo> listarDestacadas() {
+        List<OfertaEmpleo> ofertas = new ArrayList<>();
+
+        String sql = "SELECT o.id, o.titulo, o.descripcion, o.requisitos, "
+                + "o.ubicacion, o.salario, o.tipo_contrato, o.horario, "
+                + "o.fecha_publicacion, o.estado, o.empresa_id, "
+                + "e.nombre AS empresa_nombre "
+                + "FROM oferta_empleo o "
+                + "INNER JOIN empresa e ON o.empresa_id = e.id "
+                + "WHERE o.estado = 'ACTIVA' "
+                + "ORDER BY o.fecha_publicacion DESC "
+                + "LIMIT 6";
+
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+
+                OfertaEmpleo oferta = mapearResultSet(rs);
+
+                Empresa empresa = new Empresa();
+                empresa.setId(rs.getInt("empresa_id"));
+                empresa.setNombre(rs.getString("empresa_nombre"));
+
+                oferta.setEmpresa(empresa);
+
+                ofertas.add(oferta);
+            }
+
+        } catch (SQLException e) {
+            System.err.println(
+                    "Error al listar ofertas destacadas: "
+                            + e.getMessage()
+            );
+        }
+
+        return ofertas;
     }
 
     // Busca ofertas por título (búsqueda parcial con LIKE)

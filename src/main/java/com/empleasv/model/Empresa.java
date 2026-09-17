@@ -72,4 +72,29 @@ public class Empresa {
     public void setTelefono(String telefono) {
         this.telefono = telefono;
     }
+
+    // Obtiene las dos primeras letras que ya están en mayúscula
+    public String getIniciales() {
+
+        if (nombre == null || nombre.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder iniciales = new StringBuilder();
+
+        for (int i = 0; i < nombre.length(); i++) {
+
+            char letra = nombre.charAt(i);
+
+            if (Character.isUpperCase(letra)) {
+                iniciales.append(letra);
+            }
+
+            if (iniciales.length() == 2) {
+                break;
+            }
+        }
+
+        return iniciales.toString();
+    }
 }

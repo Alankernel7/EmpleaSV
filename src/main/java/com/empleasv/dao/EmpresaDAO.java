@@ -66,4 +66,46 @@ public class EmpresaDAO {
 
         return empresa;
     }
+
+    // Lista las 4 empresas con mayor cantidad de ofertas publicadas
+    public List<Empresa> listarDestacadas() {
+        List<Empresa> empresas = new ArrayList<>();
+
+        String sql = "SELECT e.id, e.nombre, e.descripcion, e.email, e.telefono, "
+                + "COUNT(o.id) AS cantidad_ofertas "
+                + "FROM empresa e "
+                + "LEFT JOIN oferta_empleo o ON e.id = o.empresa_id "
+                + "GROUP BY e.id, e.nombre, e.descripcion, e.email, e.telefono "
+                + "ORDER BY cantidad_ofertas DESC "
+                + "LIMIT 4";
+
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+
+                Empresa empresa = new Empresa();
+
+                empresa.setId(rs.getInt("id"));
+                empresa.setNombre(rs.getString("nombre"));
+                empresa.setDescripcion(rs.getString("descripcion"));
+                empresa.setEmail(rs.getString("email"));
+                empresa.setTelefono(rs.getString("telefono"));
+
+                empresas.add(empresa);
+            }
+
+        } catch (SQLException e) {
+            System.err.println(
+                    "Error al listar empresas destacadas: "
+                            + e.getMessage()
+            );
+            e.printStackTrace();
+        }
+
+        return empresas;
+    }
+
 }
+

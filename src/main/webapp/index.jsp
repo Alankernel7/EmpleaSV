@@ -2,10 +2,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <%@ page import="com.empleasv.dao.OfertaEmpleoDAO" %>
+<%@ page import="com.empleasv.dao.EmpresaDAO" %>
 
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+
 
 <%
     OfertaEmpleoDAO ofertaDAO = new OfertaEmpleoDAO();
@@ -14,6 +16,13 @@
         "ofertasDestacadas",
         ofertaDAO.listarDestacadas()
     );
+
+    EmpresaDAO empresaDAO = new EmpresaDAO();
+
+        request.setAttribute(
+            "empresasDestacadas",
+            empresaDAO.listarDestacadas()
+        );
 %>
 
 <!DOCTYPE html>
@@ -104,59 +113,98 @@
                     <p>Las mejores oportunidades de empleo seleccionadas para ti</p>
                 </div>
                 <div class="grid-3">
-                    <c:forEach var="oferta" items="${ofertasDestacadas}" end="5">
 
-                        <c:set var="palabrasTitulo" value="${fn:split(oferta.titulo, ' ')}" />
+                    <c:forEach var="oferta" items="${ofertasDestacadas}">
 
-                        <c:set
-                            var="inicial1"
-                            value="${fn:toUpperCase(fn:substring(palabrasTitulo[0], 0, 1))}"
-                        />
+                        <%-- Divide el título en palabras para generar las iniciales --%>
+                        <c:set var="palabrasTitulo"
+                               value="${fn:split(oferta.titulo, ' ')}" />
 
+                        <%-- Primera letra de la primera palabra --%>
+                        <c:set var="inicial1"
+                               value="${fn:toUpperCase(
+                                   fn:substring(palabrasTitulo[0], 0, 1)
+                               )}" />
+
+                        <%-- Segunda letra: primera letra de la segunda palabra --%>
                         <c:set var="inicial2" value="" />
 
                         <c:if test="${fn:length(palabrasTitulo) > 1}">
-                            <c:set
-                                var="inicial2"
-                                value="${fn:toUpperCase(fn:substring(palabrasTitulo[1], 0, 1))}"
-                            />
+                            <c:set var="inicial2"
+                                   value="${fn:toUpperCase(
+                                       fn:substring(palabrasTitulo[1], 0, 1)
+                                   )}" />
                         </c:if>
 
+
                         <div class="featured-card">
+
+                            <%-- Badge --%>
                             <div class="featured-card-badge">
                                 <span class="badge badge-success">
                                     Nueva
                                 </span>
                             </div>
 
-                            <div class="featured-card-icon">${inicial1}${inicial2}</div>
 
-                            <h4>${oferta.titulo}</h4>
+                            <%-- Iniciales del título --%>
+                            <div class="featured-card-icon">
+                                ${inicial1}${inicial2}
+                            </div>
 
+
+                            <%-- Título de la oferta --%>
+                            <h4>
+                                ${oferta.titulo}
+                            </h4>
+
+
+                            <%-- Nombre de la empresa --%>
                             <p class="company">
                                 ${oferta.empresa.nombre}
                             </p>
 
+
+                            <%-- Información de la oferta --%>
                             <div class="card-meta">
 
+                                <%-- Ubicación --%>
                                 <span class="card-meta-item">
                                     ${oferta.ubicacion}
                                 </span>
 
+
+                                <%-- Salario --%>
                                 <span class="card-meta-item">
-                                    $<fmt:formatNumber
-                                        value="${oferta.salario}"
-                                        minFractionDigits="2"
-                                        maxFractionDigits="2"
-                                    />
+                                    <c:choose>
+
+                                        <c:when test="${not empty oferta.salario}">
+                                            $<fmt:formatNumber
+                                                value="${oferta.salario}"
+                                                minFractionDigits="2"
+                                                maxFractionDigits="2"
+                                            />
+                                        </c:when>
+
+                                        <c:otherwise>
+                                            Salario no especificado
+                                        </c:otherwise>
+
+                                    </c:choose>
                                 </span>
 
+
+                                <%-- Tipo de contrato --%>
                                 <span class="card-meta-item">
                                     ${oferta.tipoContrato}
                                 </span>
+
                             </div>
+
                         </div>
+
                     </c:forEach>
+
                 </div>
                 <div class="text-center mt-3">
                     <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-primary btn-lg">Ver todas las ofertas</a>
@@ -172,26 +220,21 @@
                     <p>Empresas que confian en EmpleaSV para encontrar talento</p>
                 </div>
                 <div class="grid-4">
-                    <div class="company-card">
-                        <div class="company-card-logo">TC</div>
-                        <h4>TechCorp SV</h4>
-                        <p>Tecnologia</p>
-                    </div>
-                    <div class="company-card">
-                        <div class="company-card-logo">GM</div>
-                        <h4>Grupo Meridian</h4>
-                        <p>Consultoria</p>
-                    </div>
-                    <div class="company-card">
-                        <div class="company-card-logo">DV</div>
-                        <h4>DataVision</h4>
-                        <p>Analitica</p>
-                    </div>
-                    <div class="company-card">
-                        <div class="company-card-logo">NS</div>
-                        <h4>NetSolutions</h4>
-                        <p>Internet</p>
-                    </div>
+
+                    <c:forEach var="empresa" items="${empresasDestacadas}">
+
+                        <div class="company-card">
+
+                            <div class="company-card-logo">
+                                ${empresa.iniciales}
+                            </div>
+
+                            <h4>${empresa.nombre}</h4>
+
+                        </div>
+
+                    </c:forEach>
+
                 </div>
             </div>
         </section>

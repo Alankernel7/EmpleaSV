@@ -19,7 +19,7 @@
 <body>
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a class="nav-brand" href="${pageContext.request.contextPath}/index.jsp">
+            <a class="nav-brand" href="${pageContext.request.contextPath}/inicio">
                 <span class="nav-brand-icon">E</span>
                 EmpleaSV
             </a>
@@ -27,9 +27,9 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <div class="nav-center" id="navCenter">
-                <a class="nav-link active" href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
+                <a class="nav-link active" href="${pageContext.request.contextPath}/inicio">Inicio</a>
                 <a class="nav-link" href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas</a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/empresas.jsp">Empresas</a>
+                <a class="nav-link" href="${pageContext.request.contextPath}/empresas">Empresas</a>
                 <a class="nav-link" href="${pageContext.request.contextPath}/ayuda.jsp">Ayuda</a>
             </div>
             <div class="nav-actions">
@@ -282,9 +282,9 @@
                 <div>
                     <div class="footer-title">Plataforma</div>
                     <ul class="footer-links">
-                        <li><a href="${pageContext.request.contextPath}/index.jsp">Inicio</a></li>
+                        <li><a href="${pageContext.request.contextPath}/inicio">Inicio</a></li>
                         <li><a href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas de empleo</a></li>
-                        <li><a href="${pageContext.request.contextPath}/empresas.jsp">Empresas</a></li>
+                        <li><a href="${pageContext.request.contextPath}/empresas">Empresas</a></li>
                     </ul>
                 </div>
                 <div>

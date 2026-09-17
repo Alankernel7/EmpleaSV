@@ -26,46 +26,35 @@
     </div>
 
     <div class="grid-4">
-        <div class="company-card">
-            <div class="company-card-logo">TC</div>
-            <h4>TechCorp SV</h4>
-            <p>Tecnologia | 15 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">GM</div>
-            <h4>Grupo Meridian</h4>
-            <p>Consultoria | 8 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">DV</div>
-            <h4>DataVision</h4>
-            <p>Analitica | 12 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">NS</div>
-            <h4>NetSolutions</h4>
-            <p>Internet | 6 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">CS</div>
-            <h4>Creative Studio</h4>
-            <p>Diseno | 4 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">CA</div>
-            <h4>Consultores Asoc.</h4>
-            <p>Finanzas | 7 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">BH</div>
-            <h4>Banco Hipotecario</h4>
-            <p>Finanzas | 10 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">FB</div>
-            <h4>Farmacias Barriere</h4>
-            <p>Salud | 5 ofertas</p>
-        </div>
+
+        <c:forEach var="empresa" items="${empresas}">
+
+            <div class="company-card">
+
+                <div class="company-card-logo">
+                    ${empresa.iniciales}
+                </div>
+
+                <h4>
+                    ${empresa.nombre}
+                </h4>
+
+                <p>
+                    ${empresa.categoria} | ${empresa.cantidadOfertas}
+                    <c:choose>
+                        <c:when test="${empresa.cantidadOfertas == 1}">
+                            oferta
+                        </c:when>
+                        <c:otherwise>
+                            ofertas
+                        </c:otherwise>
+                    </c:choose>
+                </p>
+
+            </div>
+
+        </c:forEach>
+
     </div>
 
     <!-- Beneficios para empresas -->

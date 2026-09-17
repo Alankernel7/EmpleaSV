@@ -18,14 +18,14 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a class="nav-brand" href="${pageContext.request.contextPath}/index.jsp">
+            <a class="nav-brand" href="${pageContext.request.contextPath}/inicio">
                 <span class="nav-brand-icon">E</span>
                 EmpleaSV
             </a>
             <div class="nav-center">
-                <a class="nav-link" href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
+                <a class="nav-link" href="${pageContext.request.contextPath}/inicio">Inicio</a>
                 <a class="nav-link" href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas</a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/empresas.jsp">Empresas</a>
+                <a class="nav-link" href="${pageContext.request.contextPath}/empresas">Empresas</a>
             </div>
             <div class="nav-actions">
                 <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-ghost btn-sm">Iniciar sesion</a>

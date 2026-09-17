@@ -16,7 +16,7 @@ public class EmpresaDAO {
     // Lista todas las empresas
     public List<Empresa> listarTodas() {
         List<Empresa> empresas = new ArrayList<>();
-        String sql = "SELECT id, nombre, descripcion, email, telefono FROM empresa";
+        String sql = "SELECT id, nombre, descripcion, categoria, email, telefono FROM empresa";
 
         try (Connection conn = ConexionDB.obtenerConexion();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -27,6 +27,7 @@ public class EmpresaDAO {
                 empresa.setId(rs.getInt("id"));
                 empresa.setNombre(rs.getString("nombre"));
                 empresa.setDescripcion(rs.getString("descripcion"));
+                empresa.setCategoria(rs.getString("categoria"));
                 empresa.setEmail(rs.getString("email"));
                 empresa.setTelefono(rs.getString("telefono"));
                 empresas.add(empresa);
@@ -41,7 +42,7 @@ public class EmpresaDAO {
 
     // Obtiene una empresa por su ID
     public Empresa obtenerPorId(int id) {
-        String sql = "SELECT id, nombre, descripcion, email, telefono FROM empresa WHERE id = ?";
+        String sql = "SELECT id, nombre, descripcion, categoria, email, telefono FROM empresa WHERE id = ?";
         Empresa empresa = null;
 
         try (Connection conn = ConexionDB.obtenerConexion();
@@ -55,6 +56,7 @@ public class EmpresaDAO {
                     empresa.setId(rs.getInt("id"));
                     empresa.setNombre(rs.getString("nombre"));
                     empresa.setDescripcion(rs.getString("descripcion"));
+                    empresa.setCategoria(rs.getString("categoria"));
                     empresa.setEmail(rs.getString("email"));
                     empresa.setTelefono(rs.getString("telefono"));
                 }
@@ -71,11 +73,11 @@ public class EmpresaDAO {
     public List<Empresa> listarDestacadas() {
         List<Empresa> empresas = new ArrayList<>();
 
-        String sql = "SELECT e.id, e.nombre, e.descripcion, e.email, e.telefono, "
+        String sql = "SELECT e.id, e.nombre, e.descripcion, e.categoria, e.email, e.telefono, "
                 + "COUNT(o.id) AS cantidad_ofertas "
                 + "FROM empresa e "
                 + "LEFT JOIN oferta_empleo o ON e.id = o.empresa_id "
-                + "GROUP BY e.id, e.nombre, e.descripcion, e.email, e.telefono "
+                + "GROUP BY e.id, e.nombre, e.descripcion, e.categoria, e.email, e.telefono "
                 + "ORDER BY cantidad_ofertas DESC "
                 + "LIMIT 4";
 
@@ -90,8 +92,13 @@ public class EmpresaDAO {
                 empresa.setId(rs.getInt("id"));
                 empresa.setNombre(rs.getString("nombre"));
                 empresa.setDescripcion(rs.getString("descripcion"));
+                empresa.setCategoria(rs.getString("categoria"));
                 empresa.setEmail(rs.getString("email"));
                 empresa.setTelefono(rs.getString("telefono"));
+
+                empresa.setCantidadOfertas(
+                        rs.getInt("cantidad_ofertas")
+                );
 
                 empresas.add(empresa);
             }
@@ -101,7 +108,52 @@ public class EmpresaDAO {
                     "Error al listar empresas destacadas: "
                             + e.getMessage()
             );
-            e.printStackTrace();
+        }
+
+        return empresas;
+    }
+
+    // Lista todas las empresas junto con su cantidad de ofertas
+    public List<Empresa> listarConCantidadOfertas() {
+
+        List<Empresa> empresas = new ArrayList<>();
+
+        String sql =
+                "SELECT e.id, e.nombre, e.descripcion, e.categoria, "
+                        + "e.email, e.telefono, COUNT(o.id) AS cantidad_ofertas "
+                        + "FROM empresa e "
+                        + "LEFT JOIN oferta_empleo o ON e.id = o.empresa_id "
+                        + "GROUP BY e.id, e.nombre, e.descripcion, e.categoria, "
+                        + "e.email, e.telefono "
+                        + "ORDER BY e.nombre ASC";
+
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+
+                Empresa empresa = new Empresa();
+
+                empresa.setId(rs.getInt("id"));
+                empresa.setNombre(rs.getString("nombre"));
+                empresa.setDescripcion(rs.getString("descripcion"));
+                empresa.setCategoria(rs.getString("categoria"));
+                empresa.setEmail(rs.getString("email"));
+                empresa.setTelefono(rs.getString("telefono"));
+
+                empresa.setCantidadOfertas(
+                        rs.getInt("cantidad_ofertas")
+                );
+
+                empresas.add(empresa);
+            }
+
+        } catch (SQLException e) {
+            System.err.println(
+                    "Error al listar empresas con cantidad de ofertas: "
+                            + e.getMessage()
+            );
         }
 
         return empresas;

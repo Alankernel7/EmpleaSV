@@ -11,9 +11,9 @@
                 <div>
                     <div class="footer-title">Plataforma</div>
                     <ul class="footer-links">
-                        <li><a href="${pageContext.request.contextPath}/index.jsp">Inicio</a></li>
+                        <li><a href="${pageContext.request.contextPath}/inicio">Inicio</a></li>
                         <li><a href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas de empleo</a></li>
-                        <li><a href="${pageContext.request.contextPath}/empresas.jsp">Empresas</a></li>
+                        <li><a href="${pageContext.request.contextPath}/empresas">Empresas</a></li>
                     </ul>
                 </div>
                 <div>

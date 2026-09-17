@@ -12,7 +12,7 @@
             <h1 style="font-size:2.25rem;">Encuentra al talento que necesitas</h1>
             <p>Publica tus ofertas y conecta con los mejores profesionales de El Salvador.</p>
             <div class="flex gap-1" style="justify-content:center; flex-wrap:wrap;">
-                <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-lg" style="background:var(--white); color:var(--primary); font-weight:700;">Publicar oferta</a>
+                <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=registrar" class="btn btn-lg" style="background:var(--white); color:var(--primary); font-weight:700;">Publicar oferta</a>
                 <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-outline btn-lg" style="color:var(--white); border-color:rgba(255,255,255,0.4);">Iniciar sesion</a>
             </div>
         </div>

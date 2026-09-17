@@ -2,6 +2,8 @@ package com.empleasv.controller;
 
 import com.empleasv.dao.OfertaEmpleoDAO;
 import com.empleasv.model.OfertaEmpleo;
+import com.empleasv.dao.EmpresaDAO;
+import com.empleasv.model.Empresa;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -22,10 +24,12 @@ import java.util.List;
 public class OfertaEmpleoServlet extends HttpServlet {
 
     private OfertaEmpleoDAO ofertaDAO;
+    private EmpresaDAO empresaDAO;
 
     @Override
     public void init() throws ServletException {
         ofertaDAO = new OfertaEmpleoDAO();
+        empresaDAO = new EmpresaDAO();
     }
 
     // ==================== GET: JSON y MVC ====================
@@ -246,8 +250,13 @@ public class OfertaEmpleoServlet extends HttpServlet {
     private void mostrarFormularioRegistro(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.getRequestDispatcher("/WEB-INF/views/registrar.jsp").forward(request, response);
-    }
+        List<Empresa> empresas = empresaDAO.listarTodas();
+
+        request.setAttribute("empresas", empresas);
+
+        request.getRequestDispatcher(
+                "/WEB-INF/views/registrar.jsp"
+        ).forward(request, response);    }
 
     // ==================== MVC: Formulario Edicion ====================
 
@@ -280,11 +289,20 @@ public class OfertaEmpleoServlet extends HttpServlet {
         List<String> errores = validarCampos(request, false);
         if (!errores.isEmpty()) {
             request.setAttribute("errores", errores);
+
+            List<Empresa> empresas = empresaDAO.listarTodas();
+            request.setAttribute("empresas", empresas);
+
             request.getRequestDispatcher("/WEB-INF/views/registrar.jsp").forward(request, response);
             return;
         }
 
         OfertaEmpleo oferta = construirOfertaDesdeRequest(request, false);
+
+        oferta.setFechaPublicacion(
+                LocalDateTime.now()
+        );
+        
         boolean exito = ofertaDAO.registrar(oferta);
 
         HttpSession session = request.getSession();

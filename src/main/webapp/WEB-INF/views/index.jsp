@@ -263,7 +263,7 @@
                         <h2>Encuentra al talento que necesitas</h2>
                         <p>Publica tus ofertas y conecta con los mejores profesionales de El Salvador.</p>
                         <div class="flex gap-1" style="flex-wrap:wrap;">
-                            <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-lg">Publicar oferta</a>
+                            <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=registrar" class="btn btn-lg">Publicar oferta</a>
                             <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-outline btn-lg">Iniciar sesion</a>
                         </div>
                     </div>

@@ -80,6 +80,7 @@
                             <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=editar&id=${o.id}" class="btn btn-secondary btn-sm">Editar</a>
                             <form action="${pageContext.request.contextPath}/ofertas" method="post" style="display:inline;" onsubmit="return confirm('Eliminar esta oferta?')">
                                 <input type="hidden" name="accion" value="eliminar"/>
+                                <input type="hidden" name="format" value="jsp"/>
                                 <input type="hidden" name="id" value="${o.id}"/>
                                 <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                             </form>

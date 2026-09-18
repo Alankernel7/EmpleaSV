@@ -868,6 +868,10 @@ select.form-control {
     color: var(--gray-900);
 }
 
+.company-card-link > * {
+    pointer-events: none;
+}
+
 /* ============================================
    CTA SECTIONS
    ============================================ */

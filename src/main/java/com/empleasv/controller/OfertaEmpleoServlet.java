@@ -260,25 +260,56 @@ public class OfertaEmpleoServlet extends HttpServlet {
 
     // ==================== MVC: Formulario Edicion ====================
 
-    private void mostrarFormularioEdicion(HttpServletRequest request, HttpServletResponse response)
+    private void mostrarFormularioEdicion(
+            HttpServletRequest request,
+            HttpServletResponse response)
             throws ServletException, IOException {
 
         Integer id = parsearEntero(request, "id");
+
         if (id == null) {
-            request.setAttribute("mensajeError", "ID de oferta no valido.");
+
+            request.setAttribute(
+                    "mensajeError",
+                    "ID de oferta no valido."
+            );
+
             listarOfertasJsp(request, response);
             return;
         }
 
-        OfertaEmpleo oferta = ofertaDAO.obtenerPorId(id);
+        OfertaEmpleo oferta =
+                ofertaDAO.obtenerPorId(id);
+
         if (oferta == null) {
-            request.setAttribute("mensajeError", "No se encontro la oferta con id: " + id);
+
+            request.setAttribute(
+                    "mensajeError",
+                    "No se encontro la oferta con id: " + id
+            );
+
             listarOfertasJsp(request, response);
             return;
         }
 
-        request.setAttribute("oferta", oferta);
-        request.getRequestDispatcher("/WEB-INF/views/editar.jsp").forward(request, response);
+        // Obtener todas las empresas
+        List<Empresa> empresas =
+                empresaDAO.listarTodas();
+
+        // Enviar oferta y empresas a la vista
+        request.setAttribute(
+                "oferta",
+                oferta
+        );
+
+        request.setAttribute(
+                "empresas",
+                empresas
+        );
+
+        request.getRequestDispatcher(
+                "/WEB-INF/views/editar.jsp"
+        ).forward(request, response);
     }
 
     // ==================== MVC: Registrar (POST) ====================
@@ -302,7 +333,7 @@ public class OfertaEmpleoServlet extends HttpServlet {
         oferta.setFechaPublicacion(
                 LocalDateTime.now()
         );
-        
+
         boolean exito = ofertaDAO.registrar(oferta);
 
         HttpSession session = request.getSession();
@@ -322,14 +353,36 @@ public class OfertaEmpleoServlet extends HttpServlet {
         List<String> errores = validarCampos(request, true);
         if (!errores.isEmpty()) {
             Integer id = parsearEntero(request, "id");
-            OfertaEmpleo oferta = (id != null) ? ofertaDAO.obtenerPorId(id) : null;
-            request.setAttribute("oferta", oferta);
-            request.setAttribute("errores", errores);
-            request.getRequestDispatcher("/WEB-INF/views/editar.jsp").forward(request, response);
+
+            OfertaEmpleo oferta = (id != null) ? ofertaDAO.obtenerPorId(id)  : null;
+
+            List<Empresa> empresas = empresaDAO.listarTodas();
+
+            request.setAttribute("oferta",oferta);
+            request.setAttribute("empresas",empresas);
+            request.setAttribute("errores",errores);
+
+            request.getRequestDispatcher(
+                    "/WEB-INF/views/editar.jsp"
+            ).forward(request, response);
             return;
         }
 
-        OfertaEmpleo oferta = construirOfertaDesdeRequest(request, true);
+        OfertaEmpleo oferta =
+                construirOfertaDesdeRequest(request, true);
+
+        // Recuperar la oferta original
+        OfertaEmpleo ofertaOriginal =
+                ofertaDAO.obtenerPorId(oferta.getId());
+
+        // Mantener la fecha de publicación original
+        if (ofertaOriginal != null) {
+
+            oferta.setFechaPublicacion(
+                    ofertaOriginal.getFechaPublicacion()
+            );
+        }
+
         boolean exito = ofertaDAO.actualizar(oferta);
 
         HttpSession session = request.getSession();

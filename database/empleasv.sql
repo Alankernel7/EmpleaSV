@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS empresa (
     id          INT             AUTO_INCREMENT PRIMARY KEY,
     nombre      VARCHAR(150)    NOT NULL,
     descripcion TEXT,
+    categoria   VARCHAR(100)    NOT NULL,
     email       VARCHAR(150)    NOT NULL,
     telefono    VARCHAR(30)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -43,12 +44,13 @@ CREATE TABLE IF NOT EXISTS oferta_empleo (
 -- ------------------------------------------------------------
 
 INSERT INTO empresa
-(nombre, descripcion, email, telefono)
+(nombre, descripcion, categoria, email, telefono)
 VALUES
 
     (
         'NovaTech Solutions',
         'Empresa salvadoreña dedicada al desarrollo de software, aplicaciones web y soluciones digitales para empresas.',
+        'Tecnología',
         'contacto@novatechsv.com',
         '2201-4580'
     ),
@@ -56,6 +58,7 @@ VALUES
     (
         'Grupo Creativa',
         'Agencia especializada en diseño gráfico, marketing digital, publicidad y creación de contenido.',
+        'Marketing',
         'talento@grupocreativa.com',
         '2264-7812'
     ),
@@ -63,6 +66,7 @@ VALUES
     (
         'Servicios Corporativos Centroamericanos',
         'Empresa dedicada a servicios administrativos, financieros y de atención empresarial.',
+        'Servicios Corporativos',
         'rrhh@serviciosca.com',
         '2521-3390'
     ),
@@ -70,6 +74,7 @@ VALUES
     (
         'Digital Commerce SV',
         'Empresa enfocada en comercio electrónico, marketing, ventas digitales y administración de tiendas en línea.',
+        'Comercio Electronico',
         'empleos@digitalcommercesv.com',
         '2243-9075'
     ),
@@ -77,6 +82,7 @@ VALUES
     (
         'Innova Systems',
         'Compañía especializada en infraestructura tecnológica, soporte técnico, redes y servicios informáticos.',
+        'Tecnologia',
         'reclutamiento@innovasystems.com',
         '2133-6250'
     ),
@@ -84,6 +90,7 @@ VALUES
     (
         'Conecta Business',
         'Empresa dedicada a ventas, servicio al cliente y soluciones comerciales para pequeñas y medianas empresas.',
+        'Ventas',
         'talento@conectabusiness.com',
         '2298-4110'
     ),
@@ -91,6 +98,7 @@ VALUES
     (
         'TechCorp El Salvador',
         'Empresa líder en soluciones tecnológicas y desarrollo de software a medida.',
+        'Tecnologia',
         'rrhh@techcorp.com',
         '2264-5415'
     ),
@@ -98,13 +106,15 @@ VALUES
     (
          'Creative Studio',
          'Agencia de diseño y marketing digital especializada en branding y campañas publicitarias.',
-         'contacto@creativestudiosv',
+         'Marketing',
+         'contacto@creativestudiosv.com',
          '2245-7890'
     ),
 
     (
         'Grupo Meridian',
         'Empresa dedicada a servicios de marketing digital.',
+        'Marketing',
         'talento@meridian.com',
         '2155-1831'
     ),
@@ -112,6 +122,7 @@ VALUES
     (
         'DataVision SA',
         'Empresa especializada en análisis de datos y soluciones de inteligencia empresarial.',
+        'Analitica de Datos',
         'contacto@datavisionsv.com',
         '2263-6567'
     ),
@@ -119,6 +130,7 @@ VALUES
     (
         'Consultores Asociados',
         'Firma de consultoría en gestión empresarial y desarrollo organizacional.',
+        'Consultoria',
         'rrhh@consultoresasociadossv.com',
         '2284-9362'
     ),
@@ -126,7 +138,8 @@ VALUES
     (
         'NetSolutions SV',
         'Empresa de servicios de tecnología y soluciones de redes para empresas.',
-        'empleos.netsolutionssv.com',
+        'Tecnologia',
+        'empleos@netsolutionssv.com',
         '2291-4720'
      );
 

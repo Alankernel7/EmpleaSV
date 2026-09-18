@@ -12,7 +12,7 @@
             <h1 style="font-size:2.25rem;">Encuentra al talento que necesitas</h1>
             <p>Publica tus ofertas y conecta con los mejores profesionales de El Salvador.</p>
             <div class="flex gap-1" style="justify-content:center; flex-wrap:wrap;">
-                <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-lg" style="background:var(--white); color:var(--primary); font-weight:700;">Publicar oferta</a>
+                <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=registrar" class="btn btn-lg" style="background:var(--white); color:var(--primary); font-weight:700;">Publicar oferta</a>
                 <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-outline btn-lg" style="color:var(--white); border-color:rgba(255,255,255,0.4);">Iniciar sesion</a>
             </div>
         </div>
@@ -26,46 +26,32 @@
     </div>
 
     <div class="grid-4">
-        <div class="company-card">
-            <div class="company-card-logo">TC</div>
-            <h4>TechCorp SV</h4>
-            <p>Tecnologia | 15 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">GM</div>
-            <h4>Grupo Meridian</h4>
-            <p>Consultoria | 8 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">DV</div>
-            <h4>DataVision</h4>
-            <p>Analitica | 12 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">NS</div>
-            <h4>NetSolutions</h4>
-            <p>Internet | 6 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">CS</div>
-            <h4>Creative Studio</h4>
-            <p>Diseno | 4 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">CA</div>
-            <h4>Consultores Asoc.</h4>
-            <p>Finanzas | 7 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">BH</div>
-            <h4>Banco Hipotecario</h4>
-            <p>Finanzas | 10 ofertas</p>
-        </div>
-        <div class="company-card">
-            <div class="company-card-logo">FB</div>
-            <h4>Farmacias Barriere</h4>
-            <p>Salud | 5 ofertas</p>
-        </div>
+
+        <c:forEach var="empresa" items="${empresas}">
+            <a href="${pageContext.request.contextPath}/empresas?accion=detalle&id=${empresa.id}" class="company-card company-card-link">
+
+                <div class="company-card-logo">
+                    ${empresa.iniciales}
+                </div>
+
+                <h4>
+                    ${empresa.nombre}
+                </h4>
+
+                <p>${empresa.categoria} | ${empresa.cantidadOfertas}
+                    <c:choose>
+                        <c:when test="${empresa.cantidadOfertas == 1}">
+                            oferta
+                        </c:when>
+
+                        <c:otherwise>
+                            ofertas
+                        </c:otherwise>
+                    </c:choose>
+                </p>
+            </a>
+        </c:forEach>
+
     </div>
 
     <!-- Beneficios para empresas -->

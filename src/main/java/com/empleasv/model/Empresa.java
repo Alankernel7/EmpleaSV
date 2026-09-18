@@ -7,8 +7,11 @@ public class Empresa {
     private Integer id;
     private String nombre;
     private String descripcion;
+    private String categoria;
     private String email;
     private String telefono;
+
+    private Integer cantidadOfertas;
 
     // Constructor vacío
     public Empresa() {
@@ -71,5 +74,49 @@ public class Empresa {
     // Asigna el teléfono
     public void setTelefono(String telefono) {
         this.telefono = telefono;
+    }
+
+    // Obtiene la categoría
+    public String getCategoria() {
+        return categoria;
+    }
+
+    // Asigna la categoría
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    // Obtiene la cantidad de ofertas asociadas
+    public Integer getCantidadOfertas() {
+        return cantidadOfertas;
+    }
+
+    // Asigna la cantidad de ofertas asociadas
+    public void setCantidadOfertas(Integer cantidadOfertas) {
+        this.cantidadOfertas = cantidadOfertas;
+    }
+    // Obtiene las dos primeras letras que ya están en mayúscula
+    public String getIniciales() {
+
+        if (nombre == null || nombre.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder iniciales = new StringBuilder();
+
+        for (int i = 0; i < nombre.length(); i++) {
+
+            char letra = nombre.charAt(i);
+
+            if (Character.isUpperCase(letra)) {
+                iniciales.append(letra);
+            }
+
+            if (iniciales.length() == 2) {
+                break;
+            }
+        }
+
+        return iniciales.toString();
     }
 }

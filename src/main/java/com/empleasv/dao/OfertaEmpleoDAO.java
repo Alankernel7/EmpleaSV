@@ -183,6 +183,40 @@ public class OfertaEmpleoDAO {
         return ofertas;
     }
 
+    // Lista todas las ofertas pertenecientes a una empresa
+    public List<OfertaEmpleo> listarPorEmpresa(int empresaId) {
+
+        List<OfertaEmpleo> ofertas = new ArrayList<>();
+
+        String sql =
+                "SELECT id, titulo, descripcion, requisitos, ubicacion, salario, "
+                        + "tipo_contrato, horario, fecha_publicacion, estado, empresa_id "
+                        + "FROM oferta_empleo "
+                        + "WHERE empresa_id = ? "
+                        + "ORDER BY fecha_publicacion DESC";
+
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, empresaId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+                    ofertas.add(mapearResultSet(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println(
+                    "Error al listar ofertas por empresa: "
+                            + e.getMessage()
+            );
+        }
+
+        return ofertas;
+    }
+
     // Registra una nueva oferta en la base de datos
     public boolean registrar(OfertaEmpleo oferta) {
         String sql = "INSERT INTO oferta_empleo (titulo, descripcion, requisitos, ubicacion, "

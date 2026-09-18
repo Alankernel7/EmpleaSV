@@ -1,20 +1,9 @@
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<%@ page import="com.empleasv.dao.OfertaEmpleoDAO" %>
-
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-
-<%
-    OfertaEmpleoDAO ofertaDAO = new OfertaEmpleoDAO();
-
-    request.setAttribute(
-        "ofertasDestacadas",
-        ofertaDAO.listarDestacadas()
-    );
-%>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -30,7 +19,7 @@
 <body>
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a class="nav-brand" href="${pageContext.request.contextPath}/index.jsp">
+            <a class="nav-brand" href="${pageContext.request.contextPath}/inicio">
                 <span class="nav-brand-icon">E</span>
                 EmpleaSV
             </a>
@@ -38,9 +27,9 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
             <div class="nav-center" id="navCenter">
-                <a class="nav-link active" href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
+                <a class="nav-link active" href="${pageContext.request.contextPath}/inicio">Inicio</a>
                 <a class="nav-link" href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas</a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/empresas.jsp">Empresas</a>
+                <a class="nav-link" href="${pageContext.request.contextPath}/empresas">Empresas</a>
                 <a class="nav-link" href="${pageContext.request.contextPath}/ayuda.jsp">Ayuda</a>
             </div>
             <div class="nav-actions">
@@ -104,59 +93,98 @@
                     <p>Las mejores oportunidades de empleo seleccionadas para ti</p>
                 </div>
                 <div class="grid-3">
-                    <c:forEach var="oferta" items="${ofertasDestacadas}" end="5">
 
-                        <c:set var="palabrasTitulo" value="${fn:split(oferta.titulo, ' ')}" />
+                    <c:forEach var="oferta" items="${ofertasDestacadas}">
 
-                        <c:set
-                            var="inicial1"
-                            value="${fn:toUpperCase(fn:substring(palabrasTitulo[0], 0, 1))}"
-                        />
+                        <%-- Divide el título en palabras para generar las iniciales --%>
+                        <c:set var="palabrasTitulo"
+                               value="${fn:split(oferta.titulo, ' ')}" />
 
+                        <%-- Primera letra de la primera palabra --%>
+                        <c:set var="inicial1"
+                               value="${fn:toUpperCase(
+                                   fn:substring(palabrasTitulo[0], 0, 1)
+                               )}" />
+
+                        <%-- Segunda letra: primera letra de la segunda palabra --%>
                         <c:set var="inicial2" value="" />
 
                         <c:if test="${fn:length(palabrasTitulo) > 1}">
-                            <c:set
-                                var="inicial2"
-                                value="${fn:toUpperCase(fn:substring(palabrasTitulo[1], 0, 1))}"
-                            />
+                            <c:set var="inicial2"
+                                   value="${fn:toUpperCase(
+                                       fn:substring(palabrasTitulo[1], 0, 1)
+                                   )}" />
                         </c:if>
 
+
                         <div class="featured-card">
+
+                            <%-- Badge --%>
                             <div class="featured-card-badge">
                                 <span class="badge badge-success">
                                     Nueva
                                 </span>
                             </div>
 
-                            <div class="featured-card-icon">${inicial1}${inicial2}</div>
 
-                            <h4>${oferta.titulo}</h4>
+                            <%-- Iniciales del título --%>
+                            <div class="featured-card-icon">
+                                ${inicial1}${inicial2}
+                            </div>
 
+
+                            <%-- Título de la oferta --%>
+                            <h4>
+                                ${oferta.titulo}
+                            </h4>
+
+
+                            <%-- Nombre de la empresa --%>
                             <p class="company">
                                 ${oferta.empresa.nombre}
                             </p>
 
+
+                            <%-- Información de la oferta --%>
                             <div class="card-meta">
 
+                                <%-- Ubicación --%>
                                 <span class="card-meta-item">
                                     ${oferta.ubicacion}
                                 </span>
 
+
+                                <%-- Salario --%>
                                 <span class="card-meta-item">
-                                    $<fmt:formatNumber
-                                        value="${oferta.salario}"
-                                        minFractionDigits="2"
-                                        maxFractionDigits="2"
-                                    />
+                                    <c:choose>
+
+                                        <c:when test="${not empty oferta.salario}">
+                                            $<fmt:formatNumber
+                                                value="${oferta.salario}"
+                                                minFractionDigits="2"
+                                                maxFractionDigits="2"
+                                            />
+                                        </c:when>
+
+                                        <c:otherwise>
+                                            Salario no especificado
+                                        </c:otherwise>
+
+                                    </c:choose>
                                 </span>
 
+
+                                <%-- Tipo de contrato --%>
                                 <span class="card-meta-item">
                                     ${oferta.tipoContrato}
                                 </span>
+
                             </div>
+
                         </div>
+
                     </c:forEach>
+
                 </div>
                 <div class="text-center mt-3">
                     <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-primary btn-lg">Ver todas las ofertas</a>
@@ -172,26 +200,17 @@
                     <p>Empresas que confian en EmpleaSV para encontrar talento</p>
                 </div>
                 <div class="grid-4">
-                    <div class="company-card">
-                        <div class="company-card-logo">TC</div>
-                        <h4>TechCorp SV</h4>
-                        <p>Tecnologia</p>
-                    </div>
-                    <div class="company-card">
-                        <div class="company-card-logo">GM</div>
-                        <h4>Grupo Meridian</h4>
-                        <p>Consultoria</p>
-                    </div>
-                    <div class="company-card">
-                        <div class="company-card-logo">DV</div>
-                        <h4>DataVision</h4>
-                        <p>Analitica</p>
-                    </div>
-                    <div class="company-card">
-                        <div class="company-card-logo">NS</div>
-                        <h4>NetSolutions</h4>
-                        <p>Internet</p>
-                    </div>
+                    <c:forEach var="empresa" items="${empresasDestacadas}">
+                        <a href="${pageContext.request.contextPath}/empresas?accion=detalle&id=${empresa.id}" class="company-card company-card-link">
+                            <div class="company-card-logo">
+                                ${empresa.iniciales}
+                            </div>
+
+                            <h4>
+                                ${empresa.nombre}
+                            </h4>
+                        </a>
+                    </c:forEach>
                 </div>
             </div>
         </section>
@@ -240,7 +259,7 @@
                         <h2>Encuentra al talento que necesitas</h2>
                         <p>Publica tus ofertas y conecta con los mejores profesionales de El Salvador.</p>
                         <div class="flex gap-1" style="flex-wrap:wrap;">
-                            <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-lg">Publicar oferta</a>
+                            <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=registrar" class="btn btn-lg">Publicar oferta</a>
                             <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-outline btn-lg">Iniciar sesion</a>
                         </div>
                     </div>
@@ -259,9 +278,9 @@
                 <div>
                     <div class="footer-title">Plataforma</div>
                     <ul class="footer-links">
-                        <li><a href="${pageContext.request.contextPath}/index.jsp">Inicio</a></li>
+                        <li><a href="${pageContext.request.contextPath}/inicio">Inicio</a></li>
                         <li><a href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas de empleo</a></li>
-                        <li><a href="${pageContext.request.contextPath}/empresas.jsp">Empresas</a></li>
+                        <li><a href="${pageContext.request.contextPath}/empresas">Empresas</a></li>
                     </ul>
                 </div>
                 <div>

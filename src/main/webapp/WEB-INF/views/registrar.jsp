@@ -25,7 +25,7 @@
     <div class="card" style="max-width:750px;">
         <form action="${pageContext.request.contextPath}/ofertas" method="post">
             <input type="hidden" name="accion" value="registrar"/>
-
+            <input type="hidden" name="format" value="jsp" />
             <div class="form-group">
                 <label class="form-label" for="titulo">Titulo *</label>
                 <input type="text" id="titulo" name="titulo" class="form-control" required maxlength="200"
@@ -88,9 +88,21 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="empresa_id">Empresa ID *</label>
-                    <input type="number" id="empresa_id" name="empresa_id" class="form-control" required min="1"
-                           value="${param.empresa_id}" placeholder="ID de la empresa"/>
+                    <label class="form-label" for="empresa_id">Empresa *</label>
+                    <select id="empresa_id" name="empresa_id" class="form-control" required>
+
+                        <option value="">
+                           Seleccione una empresa...
+                        </option>
+
+                        <c:forEach var="empresa" items="${empresas}">
+
+                            <option value="${empresa.id}"
+                                ${param.empresa_id == empresa.id ? 'selected' : ''}>
+                                    ${empresa.nombre}
+                            </option>
+                        </c:forEach>
+                    </select>
                 </div>
             </div>
 

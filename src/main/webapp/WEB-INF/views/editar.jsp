@@ -37,6 +37,7 @@
             <div class="card" style="max-width:750px;">
                 <form action="${pageContext.request.contextPath}/ofertas" method="post">
                     <input type="hidden" name="accion" value="actualizar"/>
+                    <input type="hidden" name="format" value="jsp"/>
                     <input type="hidden" name="id" value="${oferta.id}"/>
 
                     <div class="form-group">
@@ -99,9 +100,36 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="empresa_id">Empresa ID *</label>
-                            <input type="number" id="empresa_id" name="empresa_id" class="form-control" required min="1"
-                                   value="${oferta.empresaId}"/>
+                            <label class="form-label" for="empresa_id">
+                                Empresa *
+                            </label>
+
+                            <select id="empresa_id"
+                                    name="empresa_id"
+                                    class="form-control"
+                                    required>
+
+                                <option value="">
+                                    Seleccione una empresa...
+                                </option>
+
+                                <c:forEach var="empresa" items="${empresas}">
+
+                                    <option value="${empresa.id}"
+                                            ${(not empty param.empresa_id
+                                            and param.empresa_id == empresa.id)
+                                            or
+                                            (empty param.empresa_id
+                                            and oferta.empresaId == empresa.id)
+                                            ? 'selected' : ''}>
+
+                                        ${empresa.nombre}
+
+                                    </option>
+
+                                </c:forEach>
+
+                            </select>
                         </div>
                     </div>
 

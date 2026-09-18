@@ -28,8 +28,7 @@
     <div class="grid-4">
 
         <c:forEach var="empresa" items="${empresas}">
-
-            <div class="company-card">
+            <a href="${pageContext.request.contextPath}/empresas?accion=detalle&id=${empresa.id}" class="company-card company-card-link">
 
                 <div class="company-card-logo">
                     ${empresa.iniciales}
@@ -39,20 +38,18 @@
                     ${empresa.nombre}
                 </h4>
 
-                <p>
-                    ${empresa.categoria} | ${empresa.cantidadOfertas}
+                <p>${empresa.categoria} | ${empresa.cantidadOfertas}
                     <c:choose>
                         <c:when test="${empresa.cantidadOfertas == 1}">
                             oferta
                         </c:when>
+
                         <c:otherwise>
                             ofertas
                         </c:otherwise>
                     </c:choose>
                 </p>
-
-            </div>
-
+            </a>
         </c:forEach>
 
     </div>

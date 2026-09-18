@@ -852,6 +852,22 @@ select.form-control {
     color: var(--gray-500);
 }
 
+.company-card-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.company-card-link:hover {
+    color: inherit;
+    border-color: var(--primary);
+}
+
+.company-card-link h4 {
+    color: var(--gray-900);
+}
+
 /* ============================================
    CTA SECTIONS
    ============================================ */

@@ -200,21 +200,17 @@
                     <p>Empresas que confian en EmpleaSV para encontrar talento</p>
                 </div>
                 <div class="grid-4">
-
                     <c:forEach var="empresa" items="${empresasDestacadas}">
-
-                        <div class="company-card">
-
+                        <a href="${pageContext.request.contextPath}/empresas?accion=detalle&id=${empresa.id}" class="company-card company-card-link">
                             <div class="company-card-logo">
                                 ${empresa.iniciales}
                             </div>
 
-                            <h4>${empresa.nombre}</h4>
-
-                        </div>
-
+                            <h4>
+                                ${empresa.nombre}
+                            </h4>
+                        </a>
                     </c:forEach>
-
                 </div>
             </div>
         </section>

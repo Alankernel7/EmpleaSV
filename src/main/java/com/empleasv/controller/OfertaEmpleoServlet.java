@@ -201,6 +201,7 @@ public class OfertaEmpleoServlet extends HttpServlet {
             ofertas = ofertaDAO.buscarPorTitulo(titulo);
         } else {
             ofertas = ofertaDAO.listarTodas();
+
         }
         request.setAttribute("ofertas", ofertas);
         request.getRequestDispatcher("/WEB-INF/views/listar.jsp").forward(request, response);
@@ -559,7 +560,15 @@ public class OfertaEmpleoServlet extends HttpServlet {
             return;
         }
 
-        String json = convertirOfertaAJson(oferta);
+        String empresaNombre = "";
+        if (oferta.getEmpresaId() != null) {
+            Empresa empresa = empresaDAO.obtenerPorId(oferta.getEmpresaId());
+            if (empresa != null) {
+                empresaNombre = empresa.getNombre();
+            }
+        }
+
+        String json = convertirOfertaAJson(oferta, empresaNombre);
         enviarJson(response, 200, json);
     }
 
@@ -697,6 +706,10 @@ public class OfertaEmpleoServlet extends HttpServlet {
     }
 
     private String convertirOfertaAJson(OfertaEmpleo o) {
+        return convertirOfertaAJson(o, "");
+    }
+
+    private String convertirOfertaAJson(OfertaEmpleo o, String empresaNombre) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         sb.append("\"id\": ").append(o.getId() != null ? o.getId() : "null").append(",");
@@ -709,7 +722,8 @@ public class OfertaEmpleoServlet extends HttpServlet {
         sb.append("\"horario\": \"").append(escapeJson(o.getHorario())).append("\",");
         sb.append("\"fechaPublicacion\": \"").append(o.getFechaPublicacion() != null ? o.getFechaPublicacion() : "").append("\",");
         sb.append("\"estado\": \"").append(escapeJson(o.getEstado())).append("\",");
-        sb.append("\"empresaId\": ").append(o.getEmpresaId() != null ? o.getEmpresaId() : "null");
+        sb.append("\"empresaId\": ").append(o.getEmpresaId() != null ? o.getEmpresaId() : "null").append(",");
+        sb.append("\"empresaNombre\": \"").append(escapeJson(empresaNombre)).append("\"");
         sb.append("}");
         return sb.toString();
     }

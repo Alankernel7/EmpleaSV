@@ -1069,8 +1069,206 @@ select.form-control {
 }
 
 /* ============================================
-   EMPTY STATE
-   ============================================ */
+    MODAL
+    ============================================ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1rem;
+    overflow-y: auto;
+    backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 720px;
+    box-shadow: var(--shadow-xl);
+    animation: modalSlideIn 0.25s ease;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    background: var(--gray-50);
+    padding: 1.75rem 2rem;
+    border-bottom: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.modal-header-content h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.5rem;
+    color: var(--gray-900);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.375rem;
+    border-radius: var(--radius-sm);
+    color: var(--gray-400);
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+
+.modal-close:hover {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.modal-body {
+    padding: 1.75rem 2rem;
+}
+
+.modal-detail-row {
+    display: flex;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--gray-100);
+    gap: 0.75rem;
+}
+
+.modal-detail-row:last-child {
+    border-bottom: none;
+}
+
+.modal-detail-label {
+    font-weight: 600;
+    color: var(--gray-500);
+    width: 170px;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+}
+
+.modal-detail-value {
+    color: var(--gray-800);
+    font-size: 0.9rem;
+}
+
+.modal-section {
+    margin-top: 1.25rem;
+}
+
+.modal-section h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    color: var(--gray-700);
+}
+
+.modal-section p {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    line-height: 1.7;
+}
+
+.modal-footer {
+    padding: 1.25rem 2rem;
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    gap: 0.75rem;
+    background: var(--gray-50);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    align-items: center;
+}
+
+.btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.modal-loading {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray-500);
+}
+
+.modal-loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--gray-200);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 1rem 0.5rem;
+    }
+
+    .modal {
+        margin-top: 0;
+        margin-bottom: 0;
+        border-radius: var(--radius-lg);
+    }
+
+    .modal-header {
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        padding: 1.25rem 1.25rem;
+    }
+
+    .modal-body {
+        padding: 1.25rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.25rem;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .modal-detail-row {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .modal-detail-label {
+        width: auto;
+    }
+}
+
+/* ============================================
+    EMPTY STATE
+    ============================================ */
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;

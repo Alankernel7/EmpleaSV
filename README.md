@@ -154,3 +154,4 @@ El archivo `EmpleaSV.war` se genera en la carpeta `target/`.
 ## Licencia
 
 Proyecto académico - Universidad Don Bosco
+

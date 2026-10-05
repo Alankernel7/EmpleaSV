@@ -1,27 +1,65 @@
 package com.empleasv.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 import java.time.LocalDateTime;
 
 // Representa una oferta de empleo
+@Entity
+@Table(name = "oferta_empleo")
 public class OfertaEmpleo {
 
     // Datos principales de la oferta
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Integer id;
+
+    @Column(name = "titulo", nullable = false, length = 200)
     private String titulo;
+
+    @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(name = "requisitos", columnDefinition = "TEXT")
     private String requisitos;
+
+    @Column(name = "ubicacion", nullable = false, length = 150)
     private String ubicacion;
+
+    @Column(name = "salario", precision = 10, scale = 2)
     private Double salario;
+
+    @Column(name = "tipo_contrato", nullable = false, length = 50)
     private String tipoContrato;
+
+    @Column(name = "horario", length = 100)
     private String horario;
+
+    @Column(name = "fecha_publicacion", nullable = false)
     private LocalDateTime fechaPublicacion;
+
+    @Column(name = "estado", nullable = false, length = 30)
     private String estado;
 
-    // ID de la empresa en la base de datos
-    private Integer empresaId;
-
-    // Empresa relacionada con la oferta
+    // Relación con empresa (ManyToOne)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id", nullable = false, referencedColumnName = "id")
     private Empresa empresa;
+
+    // Campo transitorio para compatibilidad con código existente que use empresaId directamente
+    // No se persiste en BD, se deriva de la relación empresa
+    @Transient
+    private Integer empresaId;
 
     // Constructor vacío
     public OfertaEmpleo() {
@@ -42,8 +80,13 @@ public class OfertaEmpleo {
         this.horario = horario;
         this.fechaPublicacion = fechaPublicacion;
         this.estado = estado;
-        this.empresaId = empresaId;
         this.empresa = empresa;
+        // empresaId se deriva de empresa si no se proporciona
+        if (empresa != null) {
+            this.empresaId = empresa.getId();
+        } else {
+            this.empresaId = empresaId;
+        }
     }
 
     // Obtiene el ID
@@ -146,12 +189,16 @@ public class OfertaEmpleo {
         this.estado = estado;
     }
 
-    // Obtiene el ID de la empresa
+    // Obtiene el ID de la empresa (compatibilidad)
+    // Si empresa está cargada, devuelve su ID; si no, devuelve empresaId guardado
     public Integer getEmpresaId() {
+        if (empresa != null && empresa.getId() != null) {
+            return empresa.getId();
+        }
         return empresaId;
     }
 
-    // Asigna el ID de la empresa
+    // Asigna el ID de la empresa (compatibilidad)
     public void setEmpresaId(Integer empresaId) {
         this.empresaId = empresaId;
     }
@@ -164,5 +211,19 @@ public class OfertaEmpleo {
     // Asigna la empresa relacionada
     public void setEmpresa(Empresa empresa) {
         this.empresa = empresa;
+        // Sincronizar empresaId cuando se asigna la empresa
+        if (empresa != null) {
+            this.empresaId = empresa.getId();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "OfertaEmpleo{" +
+                "id=" + id +
+                ", titulo='" + titulo + '\'' +
+                ", estado='" + estado + '\'' +
+                ", empresaId=" + getEmpresaId() +
+                '}';
     }
 }

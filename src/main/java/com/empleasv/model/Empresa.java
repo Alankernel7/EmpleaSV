@@ -1,16 +1,50 @@
 package com.empleasv.model;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
+import java.util.ArrayList;
+import java.util.List;
+
 // Representa una empresa del sistema
+@Entity
+@Table(name = "empresa")
 public class Empresa {
 
     // Datos de la empresa
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Integer id;
+
+    @Column(name = "nombre", nullable = false, length = 150)
     private String nombre;
+
+    @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(name = "categoria", nullable = false, length = 100)
     private String categoria;
+
+    @Column(name = "email", nullable = false, length = 150)
     private String email;
+
+    @Column(name = "telefono", length = 30)
     private String telefono;
 
+    // Relación con ofertas (no se persiste en BD, solo navegación)
+    @OneToMany(mappedBy = "empresa", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<OfertaEmpleo> ofertas = new ArrayList<>();
+
+    @Transient
     private Integer cantidadOfertas;
 
     // Constructor vacío
@@ -86,7 +120,17 @@ public class Empresa {
         this.categoria = categoria;
     }
 
-    // Obtiene la cantidad de ofertas asociadas
+    // Obtiene la lista de ofertas
+    public List<OfertaEmpleo> getOfertas() {
+        return ofertas;
+    }
+
+    // Asigna la lista de ofertas
+    public void setOfertas(List<OfertaEmpleo> ofertas) {
+        this.ofertas = ofertas != null ? ofertas : new ArrayList<>();
+    }
+
+    // Obtiene la cantidad de ofertas asociadas (calculada o asignada manualmente)
     public Integer getCantidadOfertas() {
         return cantidadOfertas;
     }
@@ -95,6 +139,29 @@ public class Empresa {
     public void setCantidadOfertas(Integer cantidadOfertas) {
         this.cantidadOfertas = cantidadOfertas;
     }
+
+    // Método auxiliar para agregar oferta manteniendo consistencia bidireccional
+    public void addOferta(OfertaEmpleo oferta) {
+        if (oferta != null) {
+            if (this.ofertas == null) {
+                this.ofertas = new ArrayList<>();
+            }
+            if (!this.ofertas.contains(oferta)) {
+                this.ofertas.add(oferta);
+                oferta.setEmpresa(this);
+            }
+        }
+    }
+
+    // Método auxiliar para remover oferta manteniendo consistencia bidireccional
+    public void removeOferta(OfertaEmpleo oferta) {
+        if (oferta != null && this.ofertas != null) {
+            if (this.ofertas.remove(oferta)) {
+                oferta.setEmpresa(null);
+            }
+        }
+    }
+
     // Obtiene las dos primeras letras que ya están en mayúscula
     public String getIniciales() {
 
@@ -118,5 +185,14 @@ public class Empresa {
         }
 
         return iniciales.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Empresa{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", categoria='" + categoria + '\'' +
+                '}';
     }
 }

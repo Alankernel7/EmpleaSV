@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <jsp:include page="header.jsp">
@@ -20,7 +21,7 @@
             <input type="hidden" name="format" value="jsp"/>
             <input type="hidden" name="accion" value="filtrar"/>
             <div class="form-group">
-                <input type="text" id="ubicacion" name="ubicacion" class="form-control" value="${param.ubicacion}" placeholder="Ej: San Salvador, Santa Ana..."/>
+                <input type="text" id="ubicacion" name="ubicacion" class="form-control" value="${fn:escapeXml(param.ubicacion)}" placeholder="Ej: San Salvador, Santa Ana..."/>
             </div>
             <button type="submit" class="btn btn-primary">Filtrar</button>
             <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-secondary">Ver todas</a>
@@ -47,26 +48,30 @@
                     <div class="card-header">
                         <div style="flex:1;">
                             <div class="card-title">
-                                <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=detalle&id=${o.id}">${o.titulo}</a>
+                                <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=detalle&id=${o.id}"><c:out value="${o.titulo}"/></a>
                             </div>
                             <div class="card-meta">
                                 <span class="card-meta-item">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                                    ${o.ubicacion}
+                                    <c:out value="${o.ubicacion}"/>
                                 </span>
-                                <span class="card-meta-item">${o.tipoContrato}</span>
+                                <span class="card-meta-item"><c:out value="${o.tipoContrato}"/></span>
                                 <c:if test="${not empty o.salario}">
                                     <span class="card-meta-item">$<fmt:formatNumber value="${o.salario}" type="number" minFractionDigits="2"/></span>
                                 </c:if>
                             </div>
                         </div>
                         <div class="card-actions">
-                            <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=editar&id=${o.id}" class="btn btn-secondary btn-sm">Editar</a>
+                            <c:set var="esPropia"
+                                   value="${rolUsuario == 'ADMINISTRADOR' || (rolUsuario == 'EMPRESA' && not empty empresaIdSesion && empresaIdSesion == o.empresaId)}" />
+                            <c:if test="${esPropia}">
+                                <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=editar&id=${o.id}" class="btn btn-secondary btn-sm">Editar</a>
+                            </c:if>
                         </div>
                     </div>
                     <c:if test="${not empty o.descripcion}">
                         <div class="card-body">
-                            <p class="card-text">${o.descripcion}</p>
+                            <p class="card-text"><c:out value="${o.descripcion}"/></p>
                         </div>
                     </c:if>
                 </div>

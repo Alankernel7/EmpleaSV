@@ -23,7 +23,7 @@ public class OfertaEmpleoRepository {
         EntityManager em = JpaConfig.createEntityManager();
         try {
             TypedQuery<OfertaEmpleo> query = em.createQuery(
-                    "SELECT o FROM OfertaEmpleo o ORDER BY o.fechaPublicacion DESC", OfertaEmpleo.class);
+                    "SELECT o FROM OfertaEmpleo o JOIN FETCH o.empresa ORDER BY o.fechaPublicacion DESC", OfertaEmpleo.class);
             return query.getResultList();
         } finally {
             em.close();
@@ -42,7 +42,12 @@ public class OfertaEmpleoRepository {
         }
         EntityManager em = JpaConfig.createEntityManager();
         try {
-            return em.find(OfertaEmpleo.class, id);
+            TypedQuery<OfertaEmpleo> query = em.createQuery(
+                    "SELECT o FROM OfertaEmpleo o JOIN FETCH o.empresa WHERE o.id = :id",
+                    OfertaEmpleo.class);
+            query.setParameter("id", id);
+            List<OfertaEmpleo> resultados = query.getResultList();
+            return resultados.isEmpty() ? null : resultados.get(0);
         } finally {
             em.close();
         }
@@ -82,6 +87,7 @@ public class OfertaEmpleoRepository {
         try {
             TypedQuery<OfertaEmpleo> query = em.createQuery(
                     "SELECT o FROM OfertaEmpleo o " +
+                    "JOIN FETCH o.empresa " +
                     "WHERE LOWER(o.titulo) LIKE LOWER(:titulo) " +
                     "ORDER BY o.fechaPublicacion DESC", OfertaEmpleo.class);
             query.setParameter("titulo", "%" + titulo + "%");
@@ -105,6 +111,7 @@ public class OfertaEmpleoRepository {
         try {
             TypedQuery<OfertaEmpleo> query = em.createQuery(
                     "SELECT o FROM OfertaEmpleo o " +
+                    "JOIN FETCH o.empresa " +
                     "WHERE o.ubicacion = :ubicacion " +
                     "ORDER BY o.fechaPublicacion DESC", OfertaEmpleo.class);
             query.setParameter("ubicacion", ubicacion);
@@ -128,6 +135,7 @@ public class OfertaEmpleoRepository {
         try {
             TypedQuery<OfertaEmpleo> query = em.createQuery(
                     "SELECT o FROM OfertaEmpleo o " +
+                    "JOIN FETCH o.empresa " +
                     "WHERE o.empresa.id = :empresaId " +
                     "ORDER BY o.fechaPublicacion DESC", OfertaEmpleo.class);
             query.setParameter("empresaId", empresaId);
@@ -215,6 +223,80 @@ public class OfertaEmpleoRepository {
                 em.getTransaction().rollback();
             }
             return false;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Busca y filtra ofertas para el panel administrativo.
+     *
+     * @param texto  título o nombre de empresa, puede ser null
+     * @param estado estado (ACTIVA/PAUSADA/CERRADA) o null para todos
+     * @return lista filtrada de ofertas
+     */
+    public List<OfertaEmpleo> buscarAdministrativa(String texto, String estado) {
+        EntityManager em = JpaConfig.createEntityManager();
+        try {
+            StringBuilder jpql = new StringBuilder(
+                    "SELECT o FROM OfertaEmpleo o JOIN FETCH o.empresa e WHERE 1 = 1");
+            if (texto != null && !texto.trim().isEmpty()) {
+                jpql.append(" AND (LOWER(o.titulo) LIKE LOWER(:texto) OR LOWER(e.nombre) LIKE LOWER(:texto))");
+            }
+            if (estado != null && !estado.trim().isEmpty()) {
+                jpql.append(" AND o.estado = :estado");
+            }
+            jpql.append(" ORDER BY o.fechaPublicacion DESC");
+            TypedQuery<OfertaEmpleo> query = em.createQuery(jpql.toString(), OfertaEmpleo.class);
+            if (texto != null && !texto.trim().isEmpty()) {
+                query.setParameter("texto", "%" + texto.trim() + "%");
+            }
+            if (estado != null && !estado.trim().isEmpty()) {
+                query.setParameter("estado", estado.trim());
+            }
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Cuenta ofertas por estado.
+     *
+     * @param estado estado a contar o null para el total
+     * @return cantidad de ofertas
+     */
+    public long contarPorEstado(String estado) {
+        EntityManager em = JpaConfig.createEntityManager();
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT COUNT(o) FROM OfertaEmpleo o WHERE 1 = 1");
+            if (estado != null && !estado.trim().isEmpty()) {
+                jpql.append(" AND o.estado = :estado");
+            }
+            TypedQuery<Long> query = em.createQuery(jpql.toString(), Long.class);
+            if (estado != null && !estado.trim().isEmpty()) {
+                query.setParameter("estado", estado.trim());
+            }
+            return query.getSingleResult();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lista las ofertas más recientes (panel administrativo).
+     *
+     * @param limite máximo de ofertas a devolver
+     * @return lista de ofertas
+     */
+    public List<OfertaEmpleo> listarRecientes(int limite) {
+        EntityManager em = JpaConfig.createEntityManager();
+        try {
+            TypedQuery<OfertaEmpleo> query = em.createQuery(
+                    "SELECT o FROM OfertaEmpleo o JOIN FETCH o.empresa " +
+                    "ORDER BY o.fechaPublicacion DESC", OfertaEmpleo.class);
+            query.setMaxResults(Math.max(1, limite));
+            return query.getResultList();
         } finally {
             em.close();
         }

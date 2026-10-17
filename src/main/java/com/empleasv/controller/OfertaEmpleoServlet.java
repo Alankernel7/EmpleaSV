@@ -3,7 +3,11 @@ package com.empleasv.controller;
 import com.empleasv.dao.OfertaEmpleoDAO;
 import com.empleasv.model.OfertaEmpleo;
 import com.empleasv.dao.EmpresaDAO;
+import com.empleasv.dao.PerfilEmpresaDAO;
 import com.empleasv.model.Empresa;
+import com.empleasv.model.Usuario;
+import com.empleasv.model.UsuarioRol;
+import com.empleasv.util.SesionUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import java.math.BigDecimal;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
@@ -25,11 +30,95 @@ public class OfertaEmpleoServlet extends HttpServlet {
 
     private OfertaEmpleoDAO ofertaDAO;
     private EmpresaDAO empresaDAO;
+    private PerfilEmpresaDAO perfilEmpresaDAO;
 
     @Override
     public void init() throws ServletException {
         ofertaDAO = new OfertaEmpleoDAO();
         empresaDAO = new EmpresaDAO();
+        perfilEmpresaDAO = new PerfilEmpresaDAO();
+    }
+
+    // ==================== Autorización y propiedad ====================
+
+    /**
+     * Devuelve el ID de la empresa propietaria de la cuenta autenticada.
+     * Devuelve null para ADMINISTRADOR (puede operar con cualquier empresa)
+     * y para cuentas sin empresa vinculada.
+     */
+    private Integer empresaPropia(HttpServletRequest request) {
+        Usuario usuario = SesionUtil.usuario(request);
+        if (usuario == null) {
+            return null;
+        }
+        if (usuario.getRol() == UsuarioRol.ADMINISTRADOR) {
+            return null;
+        }
+        return perfilEmpresaDAO.obtenerEmpresaIdPorUsuarioId(usuario.getId());
+    }
+
+    /**
+     * Comprueba que la oferta pertenezca a la empresa de la sesión.
+     * Un administrador puede operar sobre cualquier oferta.
+     *
+     * @return true si está permitido
+     */
+    private boolean puedeOperar(HttpServletRequest request, OfertaEmpleo oferta) {
+        if (oferta == null) {
+            return false;
+        }
+        Usuario usuario = SesionUtil.usuario(request);
+        if (usuario == null) {
+            return false;
+        }
+        if (usuario.getRol() == UsuarioRol.ADMINISTRADOR) {
+            return true;
+        }
+        Integer propia = empresaPropia(request);
+        return propia != null && propia.equals(oferta.getEmpresaId());
+    }
+
+    /**
+     * Verifica la propiedad de la oferta y, si no corresponde,
+     * redirige al panel con un mensaje de error.
+     *
+     * @return true si el usuario puede continuar
+     */
+    private boolean verificarPropiedad(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        OfertaEmpleo oferta)
+            throws IOException {
+        if (puedeOperar(request, oferta)) {
+            return true;
+        }
+        HttpSession session = request.getSession();
+        session.setAttribute("mensajeError",
+                "No tienes permiso para modificar esta oferta.");
+        if (SesionUtil.esRol(request, UsuarioRol.EMPRESA)) {
+            response.sendRedirect(request.getContextPath() + "/panel-empresa");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/ofertas?format=jsp");
+        }
+        return false;
+    }
+
+    /**
+     * Para cuentas EMPRESA garantiza que exista la empresa vinculada.
+     * Si no existe, redirige a completar el perfil empresarial.
+     */
+    private Integer resolverEmpresaPropia(HttpServletRequest request,
+                                           HttpServletResponse response)
+            throws IOException {
+        Integer empresaId = empresaPropia(request);
+        if (empresaId == null) {
+            HttpSession session = request.getSession();
+            session.setAttribute("mensajeError",
+                    "Debes completar tu perfil empresarial antes de publicar ofertas.");
+            response.sendRedirect(request.getContextPath()
+                    + "/perfil-empresa?accion=completar");
+            return null;
+        }
+        return empresaId;
     }
 
     // ==================== GET: JSON y MVC ====================
@@ -172,22 +261,61 @@ public class OfertaEmpleoServlet extends HttpServlet {
     private void listarOfertasJsp(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        List<OfertaEmpleo> ofertas = ofertaDAO.listarTodas();
-        request.setAttribute("ofertas", ofertas);
+        List<OfertaEmpleo> ofertas;
+        boolean soloMias = "1".equals(request.getParameter("mias"));
 
-        HttpSession session = request.getSession();
-        String msgExito = (String) session.getAttribute("mensajeExito");
-        String msgError = (String) session.getAttribute("mensajeError");
-        if (msgExito != null) {
-            request.setAttribute("mensajeExito", msgExito);
-            session.removeAttribute("mensajeExito");
+        if (soloMias) {
+            ofertas = ofertasPropias(request, response);
+            if (ofertas == null) {
+                return;
+            }
+            request.setAttribute("soloMias", Boolean.TRUE);
+        } else {
+            ofertas = ofertaDAO.listarTodas();
         }
-        if (msgError != null) {
-            request.setAttribute("mensajeError", msgError);
-            session.removeAttribute("mensajeError");
-        }
+
+        request.setAttribute("ofertas", ofertas);
+        SesionUtil.consumirMensajes(request);
 
         request.getRequestDispatcher("/WEB-INF/views/listar.jsp").forward(request, response);
+    }
+
+    /**
+     * Devuelve las ofertas de la empresa de la sesión para "Mis ofertas".
+     * Devuelve null cuando ya se envió una redirección (sin sesión, rol sin
+     * empresa vinculada o cuenta sin permisos). Un administrador sin empresa
+     * propia ve el listado general.
+     */
+    private List<OfertaEmpleo> ofertasPropias(HttpServletRequest request,
+                                              HttpServletResponse response)
+            throws IOException {
+
+        Usuario usuario = SesionUtil.usuario(request);
+        if (usuario == null) {
+            response.sendRedirect(request.getContextPath()
+                    + "/auth?accion=login&restringido=1");
+            return null;
+        }
+
+        if (usuario.getRol() == UsuarioRol.ADMINISTRADOR) {
+            return ofertaDAO.listarTodas();
+        }
+
+        if (usuario.getRol() != UsuarioRol.EMPRESA) {
+            response.sendRedirect(request.getContextPath() + "/ofertas?format=jsp");
+            return null;
+        }
+
+        Integer empresaId = empresaPropia(request);
+        if (empresaId == null) {
+            request.getSession().setAttribute("mensajeError",
+                    "Debes completar tu perfil empresarial antes de ver tus ofertas.");
+            response.sendRedirect(request.getContextPath()
+                    + "/perfil-empresa?accion=completar");
+            return null;
+        }
+
+        return ofertaDAO.listarPorEmpresa(empresaId);
     }
 
     // ==================== MVC: Buscar ====================
@@ -204,6 +332,7 @@ public class OfertaEmpleoServlet extends HttpServlet {
 
         }
         request.setAttribute("ofertas", ofertas);
+        SesionUtil.consumirMensajes(request);
         request.getRequestDispatcher("/WEB-INF/views/listar.jsp").forward(request, response);
     }
 
@@ -220,6 +349,7 @@ public class OfertaEmpleoServlet extends HttpServlet {
             ofertas = ofertaDAO.listarTodas();
         }
         request.setAttribute("ofertas", ofertas);
+        SesionUtil.consumirMensajes(request);
         request.getRequestDispatcher("/WEB-INF/views/filtrar.jsp").forward(request, response);
     }
 
@@ -228,6 +358,7 @@ public class OfertaEmpleoServlet extends HttpServlet {
     private void obtenerDetalleJsp(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        SesionUtil.consumirMensajes(request);
         Integer id = parsearEntero(request, "id");
         if (id == null) {
             request.setAttribute("mensajeError", "ID de oferta no valido.");
@@ -251,7 +382,22 @@ public class OfertaEmpleoServlet extends HttpServlet {
     private void mostrarFormularioRegistro(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        List<Empresa> empresas = empresaDAO.listarTodas();
+        SesionUtil.consumirMensajes(request);
+        Usuario usuario = SesionUtil.usuario(request);
+        List<Empresa> empresas;
+
+        if (usuario != null && usuario.getRol() == UsuarioRol.EMPRESA) {
+            // La cuenta solo puede publicar en su propia empresa
+            Integer empresaId = resolverEmpresaPropia(request, response);
+            if (empresaId == null) {
+                return;
+            }
+            Empresa propia = empresaDAO.obtenerPorId(empresaId);
+            empresas = propia != null ? List.of(propia) : new ArrayList<>();
+            request.setAttribute("empresaPropiaId", empresaId);
+        } else {
+            empresas = empresaDAO.listarTodas();
+        }
 
         request.setAttribute("empresas", empresas);
 
@@ -266,6 +412,7 @@ public class OfertaEmpleoServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
+        SesionUtil.consumirMensajes(request);
         Integer id = parsearEntero(request, "id");
 
         if (id == null) {
@@ -293,9 +440,22 @@ public class OfertaEmpleoServlet extends HttpServlet {
             return;
         }
 
-        // Obtener todas las empresas
-        List<Empresa> empresas =
-                empresaDAO.listarTodas();
+        // Solo el dueño de la oferta (o un administrador) puede editarla
+        if (!verificarPropiedad(request, response, oferta)) {
+            return;
+        }
+
+        Usuario usuario = SesionUtil.usuario(request);
+        List<Empresa> empresas;
+
+        if (usuario != null && usuario.getRol() == UsuarioRol.EMPRESA) {
+            Integer empresaId = empresaPropia(request);
+            Empresa propia = empresaId != null ? empresaDAO.obtenerPorId(empresaId) : null;
+            empresas = propia != null ? List.of(propia) : new ArrayList<>();
+            request.setAttribute("empresaPropiaId", empresaId);
+        } else {
+            empresas = empresaDAO.listarTodas();
+        }
 
         // Enviar oferta y empresas a la vista
         request.setAttribute(
@@ -318,18 +478,21 @@ public class OfertaEmpleoServlet extends HttpServlet {
     private void registrarOfertaJsp(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        List<String> errores = validarCampos(request, false);
+        Integer empresaForzada = empresaForzadaParaEscritura(request, response);
+        if (empresaForzada == null && esCuentaEmpresa(request)) {
+            return;
+        }
+
+        List<String> errores = validarCampos(request, false, empresaForzada);
         if (!errores.isEmpty()) {
             request.setAttribute("errores", errores);
-
-            List<Empresa> empresas = empresaDAO.listarTodas();
-            request.setAttribute("empresas", empresas);
+            prepararEmpresasParaFormulario(request, empresaForzada);
 
             request.getRequestDispatcher("/WEB-INF/views/registrar.jsp").forward(request, response);
             return;
         }
 
-        OfertaEmpleo oferta = construirOfertaDesdeRequest(request, false);
+        OfertaEmpleo oferta = construirOfertaDesdeRequest(request, false, empresaForzada);
 
         oferta.setFechaPublicacion(
                 LocalDateTime.now()
@@ -351,17 +514,27 @@ public class OfertaEmpleoServlet extends HttpServlet {
     private void actualizarOfertaJsp(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        List<String> errores = validarCampos(request, true);
+        Integer id = parsearEntero(request, "id");
+
+        OfertaEmpleo ofertaExistente = (id != null) ? ofertaDAO.obtenerPorId(id) : null;
+        if (ofertaExistente == null) {
+            HttpSession session = request.getSession();
+            session.setAttribute("mensajeError", "No se encontro la oferta indicada.");
+            response.sendRedirect(request.getContextPath() + "/ofertas?format=jsp");
+            return;
+        }
+
+        if (!verificarPropiedad(request, response, ofertaExistente)) {
+            return;
+        }
+
+        Integer empresaForzada = esCuentaEmpresa(request) ? empresaPropia(request) : null;
+
+        List<String> errores = validarCampos(request, true, empresaForzada);
         if (!errores.isEmpty()) {
-            Integer id = parsearEntero(request, "id");
-
-            OfertaEmpleo oferta = (id != null) ? ofertaDAO.obtenerPorId(id)  : null;
-
-            List<Empresa> empresas = empresaDAO.listarTodas();
-
-            request.setAttribute("oferta",oferta);
-            request.setAttribute("empresas",empresas);
-            request.setAttribute("errores",errores);
+            request.setAttribute("oferta", ofertaExistente);
+            prepararEmpresasParaFormulario(request, empresaForzada);
+            request.setAttribute("errores", errores);
 
             request.getRequestDispatcher(
                     "/WEB-INF/views/editar.jsp"
@@ -370,19 +543,10 @@ public class OfertaEmpleoServlet extends HttpServlet {
         }
 
         OfertaEmpleo oferta =
-                construirOfertaDesdeRequest(request, true);
-
-        // Recuperar la oferta original
-        OfertaEmpleo ofertaOriginal =
-                ofertaDAO.obtenerPorId(oferta.getId());
+                construirOfertaDesdeRequest(request, true, empresaForzada);
 
         // Mantener la fecha de publicación original
-        if (ofertaOriginal != null) {
-
-            oferta.setFechaPublicacion(
-                    ofertaOriginal.getFechaPublicacion()
-            );
-        }
+        oferta.setFechaPublicacion(ofertaExistente.getFechaPublicacion());
 
         boolean exito = ofertaDAO.actualizar(oferta);
 
@@ -409,6 +573,17 @@ public class OfertaEmpleoServlet extends HttpServlet {
             return;
         }
 
+        OfertaEmpleo oferta = ofertaDAO.obtenerPorId(id);
+        if (oferta == null) {
+            session.setAttribute("mensajeError", "No se encontro la oferta indicada.");
+            response.sendRedirect(request.getContextPath() + "/ofertas?format=jsp");
+            return;
+        }
+
+        if (!verificarPropiedad(request, response, oferta)) {
+            return;
+        }
+
         boolean exito = ofertaDAO.eliminar(id);
         if (exito) {
             session.setAttribute("mensajeExito", "Oferta eliminada correctamente.");
@@ -420,7 +595,8 @@ public class OfertaEmpleoServlet extends HttpServlet {
 
     // ==================== Validaciones (EM-18) ====================
 
-    private List<String> validarCampos(HttpServletRequest request, boolean esEdicion) {
+    private List<String> validarCampos(HttpServletRequest request, boolean esEdicion,
+                                       Integer empresaForzada) {
         List<String> errores = new ArrayList<>();
 
         String titulo = obtenerParametro(request, "titulo");
@@ -429,7 +605,8 @@ public class OfertaEmpleoServlet extends HttpServlet {
         String tipoContrato = obtenerParametro(request, "tipo_contrato");
         String horario = obtenerParametro(request, "horario");
         String salarioStr = obtenerParametro(request, "salario");
-        Integer empresaId = parsearEntero(request, "empresa_id");
+        Integer empresaId = empresaForzada != null
+                ? empresaForzada : parsearEntero(request, "empresa_id");
 
         if (esEdicion) {
             Integer id = parsearEntero(request, "id");
@@ -466,8 +643,8 @@ public class OfertaEmpleoServlet extends HttpServlet {
 
         if (salarioStr != null && !salarioStr.isEmpty()) {
             try {
-                Double salario = Double.parseDouble(salarioStr);
-                if (salario < 0) {
+                BigDecimal salario = new BigDecimal(salarioStr);
+                if (salario.compareTo(BigDecimal.ZERO) < 0) {
                     errores.add("El salario no puede ser negativo.");
                 }
             } catch (NumberFormatException e) {
@@ -475,14 +652,38 @@ public class OfertaEmpleoServlet extends HttpServlet {
             }
         }
 
+        String estado = obtenerParametro(request, "estado");
+        if (estado == null || estado.isEmpty()) {
+            errores.add("Debe seleccionar un estado para la oferta.");
+        } else if (!ESTADOS_VALIDOS.contains(estado)) {
+            errores.add("El estado seleccionado no es valido.");
+        }
+
         if (empresaId == null || empresaId <= 0) {
-            errores.add("El ID de la empresa es obligatorio y debe ser un numero positivo.");
+            errores.add("Debe existir una empresa asociada a la oferta.");
         }
 
         return errores;
     }
 
-    private OfertaEmpleo construirOfertaDesdeRequest(HttpServletRequest request, boolean esEdicion) {
+    /** Estados admitidos por la oferta de empleo. */
+    private static final List<String> ESTADOS_VALIDOS =
+            List.of("ACTIVA", "PAUSADA", "CERRADA");
+
+    /**
+     * Devuelve el estado enviado por el cliente y, si viene vacio o ausente,
+     * el indicado como respaldo (evita violar la restriccion NOT NULL).
+     */
+    private String resolverEstado(String enviado, String respaldo) {
+        if (enviado == null || enviado.isEmpty()) {
+            return respaldo;
+        }
+        return ESTADOS_VALIDOS.contains(enviado) ? enviado : respaldo;
+    }
+
+    private OfertaEmpleo construirOfertaDesdeRequest(HttpServletRequest request,
+                                                     boolean esEdicion,
+                                                     Integer empresaForzada) {
         OfertaEmpleo oferta = new OfertaEmpleo();
 
         if (esEdicion) {
@@ -493,14 +694,58 @@ public class OfertaEmpleoServlet extends HttpServlet {
         oferta.setDescripcion(obtenerParametro(request, "descripcion"));
         oferta.setRequisitos(obtenerParametro(request, "requisitos"));
         oferta.setUbicacion(obtenerParametro(request, "ubicacion"));
-        oferta.setSalario(parsearDouble(request, "salario"));
+        oferta.setSalario(parsearBigDecimal(request, "salario"));
         oferta.setTipoContrato(obtenerParametro(request, "tipo_contrato"));
         oferta.setHorario(obtenerParametro(request, "horario"));
         oferta.setFechaPublicacion(parsearFecha(request, "fecha_publicacion"));
         oferta.setEstado(obtenerParametro(request, "estado"));
-        oferta.setEmpresaId(parsearEntero(request, "empresa_id"));
+
+        // La empresa se resuelve en el servidor: nunca se confía en un ID
+        // enviado libremente por el navegador.
+        Integer empresaId = empresaForzada != null
+                ? empresaForzada : parsearEntero(request, "empresa_id");
+        Empresa empresa = (empresaId != null) ? empresaDAO.obtenerPorId(empresaId) : null;
+        oferta.setEmpresa(empresa);
 
         return oferta;
+    }
+
+    // ==================== Auxiliares de autorización ====================
+
+    private boolean esCuentaEmpresa(HttpServletRequest request) {
+        Usuario usuario = SesionUtil.usuario(request);
+        return usuario != null && usuario.getRol() == UsuarioRol.EMPRESA;
+    }
+
+    /**
+     * Resuelve la empresa que debe quedar asociada a la oferta al escribir.
+     * Para EMPRESA siempre será la suya; para ADMINISTRADOR se toma del formulario.
+     *
+     * @return ID de empresa o null si no aplica / no está disponible
+     */
+    private Integer empresaForzadaParaEscritura(HttpServletRequest request,
+                                                HttpServletResponse response)
+            throws IOException {
+        if (esCuentaEmpresa(request)) {
+            return resolverEmpresaPropia(request, response);
+        }
+        return null;
+    }
+
+    /**
+     * Carga la lista de empresas para el formulario según el rol.
+     */
+    private void prepararEmpresasParaFormulario(HttpServletRequest request,
+                                                Integer empresaForzada) {
+        if (esCuentaEmpresa(request)) {
+            Empresa propia = empresaForzada != null
+                    ? empresaDAO.obtenerPorId(empresaForzada) : null;
+            request.setAttribute("empresas",
+                    propia != null ? List.of(propia) : new ArrayList<Empresa>());
+            request.setAttribute("empresaPropiaId", empresaForzada);
+        } else {
+            request.setAttribute("empresas", empresaDAO.listarTodas());
+        }
     }
 
     // ==================== JSON: Listar ====================
@@ -580,7 +825,24 @@ public class OfertaEmpleoServlet extends HttpServlet {
         String titulo = obtenerParametro(request, "titulo");
         String descripcion = obtenerParametro(request, "descripcion");
         String ubicacion = obtenerParametro(request, "ubicacion");
-        Integer empresaId = parsearEntero(request, "empresa_id");
+
+        Integer empresaId;
+        Usuario usuarioJson = SesionUtil.usuario(request);
+        if (usuarioJson != null && usuarioJson.getRol() == UsuarioRol.ADMINISTRADOR) {
+            empresaId = parsearEntero(request, "empresa_id");
+            if (empresaId == null) {
+                enviarError(response, 400, "El campo 'empresa_id' es obligatorio y debe ser numerico");
+                return;
+            }
+        } else {
+            empresaId = usuarioJson != null
+                    ? perfilEmpresaDAO.obtenerEmpresaIdPorUsuarioId(usuarioJson.getId()) : null;
+            if (empresaId == null) {
+                enviarError(response, 403,
+                        "Completa tu perfil empresarial antes de publicar ofertas");
+                return;
+            }
+        }
 
         if (titulo == null || titulo.isEmpty()) {
             enviarError(response, 400, "El campo 'titulo' es obligatorio");
@@ -594,22 +856,20 @@ public class OfertaEmpleoServlet extends HttpServlet {
             enviarError(response, 400, "El campo 'ubicacion' es obligatorio");
             return;
         }
-        if (empresaId == null) {
-            enviarError(response, 400, "El campo 'empresa_id' es obligatorio y debe ser numerico");
-            return;
-        }
 
         OfertaEmpleo oferta = new OfertaEmpleo();
         oferta.setTitulo(titulo);
         oferta.setDescripcion(descripcion);
         oferta.setRequisitos(obtenerParametro(request, "requisitos"));
         oferta.setUbicacion(ubicacion);
-        oferta.setSalario(parsearDouble(request, "salario"));
+        oferta.setSalario(parsearBigDecimal(request, "salario"));
         oferta.setTipoContrato(obtenerParametro(request, "tipo_contrato"));
         oferta.setHorario(obtenerParametro(request, "horario"));
-        oferta.setFechaPublicacion(parsearFecha(request, "fecha_publicacion"));
-        oferta.setEstado(obtenerParametro(request, "estado"));
-        oferta.setEmpresaId(empresaId);
+        // fecha_publicacion y estado son NOT NULL: se completan en el servidor
+        LocalDateTime fecha = parsearFecha(request, "fecha_publicacion");
+        oferta.setFechaPublicacion(fecha != null ? fecha : LocalDateTime.now());
+        oferta.setEstado(resolverEstado(obtenerParametro(request, "estado"), "ACTIVA"));
+        oferta.setEmpresa(empresaDAO.obtenerPorId(empresaId));
 
         boolean exito = ofertaDAO.registrar(oferta);
         if (exito) {
@@ -628,12 +888,22 @@ public class OfertaEmpleoServlet extends HttpServlet {
         String titulo = obtenerParametro(request, "titulo");
         String descripcion = obtenerParametro(request, "descripcion");
         String ubicacion = obtenerParametro(request, "ubicacion");
-        Integer empresaId = parsearEntero(request, "empresa_id");
 
         if (id == null) {
             enviarError(response, 400, "El campo 'id' es obligatorio y debe ser numerico");
             return;
         }
+
+        OfertaEmpleo existente = ofertaDAO.obtenerPorId(id);
+        if (existente == null) {
+            enviarError(response, 404, "No se encontro la oferta con id: " + id);
+            return;
+        }
+        if (!puedeOperar(request, existente)) {
+            enviarError(response, 403, "No autorizado para modificar esta oferta");
+            return;
+        }
+
         if (titulo == null || titulo.isEmpty()) {
             enviarError(response, 400, "El campo 'titulo' es obligatorio");
             return;
@@ -646,6 +916,9 @@ public class OfertaEmpleoServlet extends HttpServlet {
             enviarError(response, 400, "El campo 'ubicacion' es obligatorio");
             return;
         }
+
+        Integer empresaId = esCuentaEmpresa(request)
+                ? empresaPropia(request) : parsearEntero(request, "empresa_id");
         if (empresaId == null) {
             enviarError(response, 400, "El campo 'empresa_id' es obligatorio y debe ser numerico");
             return;
@@ -657,12 +930,15 @@ public class OfertaEmpleoServlet extends HttpServlet {
         oferta.setDescripcion(descripcion);
         oferta.setRequisitos(obtenerParametro(request, "requisitos"));
         oferta.setUbicacion(ubicacion);
-        oferta.setSalario(parsearDouble(request, "salario"));
+        oferta.setSalario(parsearBigDecimal(request, "salario"));
         oferta.setTipoContrato(obtenerParametro(request, "tipo_contrato"));
         oferta.setHorario(obtenerParametro(request, "horario"));
-        oferta.setFechaPublicacion(parsearFecha(request, "fecha_publicacion"));
-        oferta.setEstado(obtenerParametro(request, "estado"));
-        oferta.setEmpresaId(empresaId);
+        // Se conservan los valores originales si el cliente no los envia
+        LocalDateTime fecha = parsearFecha(request, "fecha_publicacion");
+        oferta.setFechaPublicacion(fecha != null ? fecha : existente.getFechaPublicacion());
+        oferta.setEstado(resolverEstado(obtenerParametro(request, "estado"),
+                existente.getEstado()));
+        oferta.setEmpresa(empresaDAO.obtenerPorId(empresaId));
 
         boolean exito = ofertaDAO.actualizar(oferta);
         if (exito) {
@@ -680,6 +956,16 @@ public class OfertaEmpleoServlet extends HttpServlet {
         Integer id = parsearEntero(request, "id");
         if (id == null) {
             enviarError(response, 400, "El parametro 'id' es requerido y debe ser numerico");
+            return;
+        }
+
+        OfertaEmpleo existente = ofertaDAO.obtenerPorId(id);
+        if (existente == null) {
+            enviarError(response, 404, "No se encontro la oferta con id: " + id);
+            return;
+        }
+        if (!puedeOperar(request, existente)) {
+            enviarError(response, 403, "No autorizado para eliminar esta oferta");
             return;
         }
 
@@ -774,13 +1060,13 @@ public class OfertaEmpleoServlet extends HttpServlet {
         }
     }
 
-    private Double parsearDouble(HttpServletRequest request, String nombre) {
+    private BigDecimal parsearBigDecimal(HttpServletRequest request, String nombre) {
         String valor = obtenerParametro(request, nombre);
         if (valor == null || valor.isEmpty()) {
             return null;
         }
         try {
-            return Double.parseDouble(valor);
+            return new BigDecimal(valor);
         } catch (NumberFormatException e) {
             return null;
         }

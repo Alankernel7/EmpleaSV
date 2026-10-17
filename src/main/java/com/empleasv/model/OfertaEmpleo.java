@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 // Representa una oferta de empleo
@@ -37,7 +38,7 @@ public class OfertaEmpleo {
     private String ubicacion;
 
     @Column(name = "salario", precision = 10, scale = 2)
-    private Double salario;
+    private BigDecimal salario;
 
     @Column(name = "tipo_contrato", nullable = false, length = 50)
     private String tipoContrato;
@@ -67,7 +68,7 @@ public class OfertaEmpleo {
 
     // Constructor para crear una oferta con todos sus datos
     public OfertaEmpleo(Integer id, String titulo, String descripcion, String requisitos,
-                        String ubicacion, Double salario, String tipoContrato, String horario,
+                        String ubicacion, BigDecimal salario, String tipoContrato, String horario,
                         LocalDateTime fechaPublicacion, String estado, Integer empresaId,
                         Empresa empresa) {
         this.id = id;
@@ -140,12 +141,12 @@ public class OfertaEmpleo {
     }
 
     // Obtiene el salario
-    public Double getSalario() {
+    public BigDecimal getSalario() {
         return salario;
     }
 
     // Asigna el salario
-    public void setSalario(Double salario) {
+    public void setSalario(BigDecimal salario) {
         this.salario = salario;
     }
 

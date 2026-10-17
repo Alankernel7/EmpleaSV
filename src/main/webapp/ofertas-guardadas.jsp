@@ -7,83 +7,29 @@
 
 <div class="container section-sm">
     <div class="page-header">
-        <h1>Mis ofertas guardadas</h1>
-    </div>
-
-    <div class="alert alert-info">
-        Esta seccion es visual. La funcionalidad de guardado estara disponible proximamente.
-    </div>
-
-    <!-- Oferta guardada ejemplo 1 -->
-    <div class="card mb-1">
-        <div class="card-header">
-            <div style="flex:1;">
-                <div class="card-title">
-                    <a href="#">Desarrollador Java Senior</a>
-                </div>
-                <div class="card-meta">
-                    <span class="card-meta-item">TechCorp El Salvador</span>
-                    <span class="card-meta-item">San Salvador</span>
-                    <span class="card-meta-item">$1,800</span>
-                    <span class="badge badge-success">Activa</span>
-                </div>
-            </div>
-            <div class="card-actions">
-                <a href="#" class="btn btn-primary btn-sm" onclick="alert('La funcion de postulacion estara disponible proximamente.'); return false;">Postularme</a>
-                <button class="btn btn-ghost btn-sm" onclick="alert('Removida de guardados (visual).')">Eliminar</button>
-            </div>
+        <div>
+            <h1>Mis ofertas guardadas</h1>
+            <p class="text-muted" style="margin-top:0.35rem;">Ofertas que marcaste para revisar mas tarde.</p>
         </div>
-        <div class="card-body">
-            <p class="card-text">Buscamos desarrollador Java con experiencia en Spring Boot y microservicios.</p>
+        <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-secondary">Explorar ofertas</a>
+    </div>
+
+    <div class="aviso aviso-info">
+        <div>
+            <strong>Modulo de ofertas guardadas no disponible</strong>
+            La plataforma todavia no guarda ofertas favoritas: esta parte del sistema no ha sido
+            implementada, por lo que aqui no hay informacion que mostrar. No se muestran datos de
+            ejemplo porque no existen en la base de datos.
         </div>
     </div>
 
-    <!-- Oferta guardada ejemplo 2 -->
-    <div class="card mb-1">
-        <div class="card-header">
-            <div style="flex:1;">
-                <div class="card-title">
-                    <a href="#">Ingeniero de Datos</a>
-                </div>
-                <div class="card-meta">
-                    <span class="card-meta-item">DataVision SA</span>
-                    <span class="card-meta-item">La Libertad</span>
-                    <span class="card-meta-item">$1,500</span>
-                    <span class="badge badge-success">Activa</span>
-                </div>
-            </div>
-            <div class="card-actions">
-                <a href="#" class="btn btn-primary btn-sm" onclick="alert('La funcion de postulacion estara disponible proximamente.'); return false;">Postularme</a>
-                <button class="btn btn-ghost btn-sm" onclick="alert('Removida de guardados (visual).')">Eliminar</button>
-            </div>
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
         </div>
-        <div class="card-body">
-            <p class="card-text">Requerimos ingeniero de datos con conocimientos en Python, SQL y herramientas ETL.</p>
-        </div>
-    </div>
-
-    <!-- Oferta guardada ejemplo 3 -->
-    <div class="card mb-1">
-        <div class="card-header">
-            <div style="flex:1;">
-                <div class="card-title">
-                    <a href="#">Disenador UX/UI</a>
-                </div>
-                <div class="card-meta">
-                    <span class="card-meta-item">Creative Studio</span>
-                    <span class="card-meta-item">Santa Ana</span>
-                    <span class="card-meta-item">$1,200</span>
-                    <span class="badge badge-warning">Pausada</span>
-                </div>
-            </div>
-            <div class="card-actions">
-                <a href="#" class="btn btn-primary btn-sm" onclick="alert('La funcion de postulacion estara disponible proximamente.'); return false;">Postularme</a>
-                <button class="btn btn-ghost btn-sm" onclick="alert('Removida de guardados (visual).')">Eliminar</button>
-            </div>
-        </div>
-        <div class="card-body">
-            <p class="card-text">Estamos buscando disenador UX/UI con experiencia en Figma y prototipado.</p>
-        </div>
+        <h3>No tienes ofertas guardadas</h3>
+        <p>Cuando el modulo este disponible, aqui apareceran las ofertas que marques como favoritas.</p>
+        <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-primary">Ver ofertas disponibles</a>
     </div>
 </div>
 

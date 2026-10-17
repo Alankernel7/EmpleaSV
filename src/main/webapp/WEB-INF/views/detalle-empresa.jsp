@@ -42,7 +42,7 @@
             </div>
 
             <h1>
-                ${empresa.nombre}
+                <h1><c:out value="${empresa.nombre}"/></h1>
             </h1>
 
             <span class="badge badge-primary">${empresa.categoria}</span>
@@ -53,7 +53,7 @@
                 <h3>Sobre la empresa</h3>
 
                 <p class="card-text">
-                    ${empresa.descripcion}</p>
+                    <c:out value="${empresa.descripcion}"/></p>
             </div>
 
             <div class="detail-section">
@@ -62,13 +62,13 @@
                 <div class="detail-row">
                     <div class="detail-label">Correo</div>
 
-                    <div class="detail-value">${empresa.email}</div>
+                    <div class="detail-value"><c:out value="${empresa.email}"/></div>
                 </div>
 
                 <div class="detail-row">
                     <div class="detail-label">Telefono</div>
 
-                    <div class="detail-value">${empresa.telefono}</div>
+                    <div class="detail-value"><c:out value="${empresa.telefono}"/></div>
                 </div>
 
                 <div class="detail-row">
@@ -83,7 +83,7 @@
     <%-- Ofertas de la empresa --%>
     <section class="section">
         <div class="section-header">
-            <h2>Ofertas de ${empresa.nombre}</h2>
+            <h2>Ofertas de <h1><c:out value="${empresa.nombre}"/></h1></h2>
             <p>${fn:length(ofertas)}
                 <c:choose>
                     <c:when test="${fn:length(ofertas) == 1}">
@@ -150,14 +150,14 @@
                         <%-- Título --%>
                         <h4>
                             <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=detalle&id=${oferta.id}">
-                                ${oferta.titulo}
+                                <c:out value="${oferta.titulo}"/>
                             </a>
                         </h4>
 
                         <%-- Metadata --%>
                         <div class="card-meta">
                             <span class="card-meta-item">
-                                ${oferta.ubicacion}
+                                <c:out value="${oferta.ubicacion}"/>
                             </span>
 
                             <span class="card-meta-item">
@@ -176,7 +176,7 @@
                             </span>
 
                             <span class="card-meta-item">
-                                ${oferta.tipoContrato}
+                                <c:out value="${oferta.tipoContrato}"/>
                             </span>
                         </div>
                     </div>

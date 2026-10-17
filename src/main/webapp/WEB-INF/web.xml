@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>EmpleaSV</display-name>
+
+    <!--
+      Directorio externo donde se guardan los archivos subidos
+      (fotografias, logos y curriculums). Debe quedar FUERA del
+      directorio publico de la aplicacion. Si no se indica, se usa
+      la propiedad de sistema empleasv.archivos.directorio, luego la
+      variable de entorno EMPLEASV_ARCHIVOS_DIR y, por ultimo,
+      una carpeta bajo el directorio temporal del sistema.
+    -->
+    <context-param>
+        <param-name>empleasv.archivos.directorio</param-name>
+        <param-value>C:/empleasv-archivos</param-value>
+    </context-param>
+
+    <session-config>
+        <session-timeout>60</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <!-- Activar a true cuando el sitio se publique mediante HTTPS -->
+            <secure>false</secure>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+</web-app>

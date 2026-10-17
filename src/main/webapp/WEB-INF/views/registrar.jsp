@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <jsp:include page="header.jsp">
     <jsp:param name="tituloPagina" value="Registrar Oferta"/>
@@ -17,7 +18,7 @@
     <c:if test="${not empty errores}">
         <div class="alert alert-error">
             <c:forEach var="error" items="${errores}">
-                <div>${error}</div>
+                <div><c:out value="${error}"/></div>
             </c:forEach>
         </div>
     </c:if>
@@ -29,31 +30,31 @@
             <div class="form-group">
                 <label class="form-label" for="titulo">Titulo *</label>
                 <input type="text" id="titulo" name="titulo" class="form-control" required maxlength="200"
-                       value="${param.titulo}" placeholder="Ej: Desarrollador Java Senior"/>
+                       value="${fn:escapeXml(param.titulo)}" placeholder="Ej: Desarrollador Java Senior"/>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="descripcion">Descripcion *</label>
                 <textarea id="descripcion" name="descripcion" class="form-control" required
-                          placeholder="Describe las responsabilidades y actividades del puesto...">${param.descripcion}</textarea>
+                          placeholder="Describe las responsabilidades y actividades del puesto...">${fn:escapeXml(param.descripcion)}</textarea>
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="requisitos">Requisitos</label>
                 <textarea id="requisitos" name="requisitos" class="form-control"
-                          placeholder="Experiencia, conocimientos, habilidades requeridas...">${param.requisitos}</textarea>
+                          placeholder="Experiencia, conocimientos, habilidades requeridas...">${fn:escapeXml(param.requisitos)}</textarea>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label" for="ubicacion">Ubicacion *</label>
                     <input type="text" id="ubicacion" name="ubicacion" class="form-control" required maxlength="150"
-                           value="${param.ubicacion}" placeholder="Ej: San Salvador"/>
+                           value="${fn:escapeXml(param.ubicacion)}" placeholder="Ej: San Salvador"/>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="salario">Salario</label>
                     <input type="number" id="salario" name="salario" class="form-control" step="0.01" min="0"
-                           value="${param.salario}" placeholder="Ej: 1500.00"/>
+                           value="${fn:escapeXml(param.salario)}" placeholder="Ej: 1500.00"/>
                     <span class="form-hint">Formato numerico con decimales</span>
                 </div>
             </div>
@@ -74,7 +75,7 @@
                 <div class="form-group">
                     <label class="form-label" for="horario">Horario *</label>
                     <input type="text" id="horario" name="horario" class="form-control" required maxlength="100"
-                           value="${param.horario}" placeholder="Ej: 8:00 AM - 5:00 PM"/>
+                           value="${fn:escapeXml(param.horario)}" placeholder="Ej: 8:00 AM - 5:00 PM"/>
                 </div>
             </div>
 
@@ -89,20 +90,29 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="empresa_id">Empresa *</label>
-                    <select id="empresa_id" name="empresa_id" class="form-control" required>
+                    <c:choose>
+                        <c:when test="${not empty empresaPropiaId}">
+                            <input type="hidden" name="empresa_id" id="empresa_id" value="${empresaPropiaId}">
+                            <input type="text" class="form-control" disabled
+                                   value="${not empty empresas and not empty empresas[0].nombre ? empresas[0].nombre : 'Mi empresa'}">
+                            <span class="form-hint">Las ofertas se publican a nombre de tu empresa.</span>
+                        </c:when>
+                        <c:otherwise>
+                            <select id="empresa_id" name="empresa_id" class="form-control" required>
+                                <option value="">
+                                   Seleccione una empresa...
+                                </option>
 
-                        <option value="">
-                           Seleccione una empresa...
-                        </option>
+                                <c:forEach var="empresa" items="${empresas}">
 
-                        <c:forEach var="empresa" items="${empresas}">
-
-                            <option value="${empresa.id}"
-                                ${param.empresa_id == empresa.id ? 'selected' : ''}>
-                                    ${empresa.nombre}
-                            </option>
-                        </c:forEach>
-                    </select>
+                                    <option value="${empresa.id}"
+                                        ${param.empresa_id == empresa.id ? 'selected' : ''}>
+                                            <c:out value="${empresa.nombre}"/>
+                                    </option>
+                                </c:forEach>
+                            </select>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
 

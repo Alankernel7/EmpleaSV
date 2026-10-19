@@ -158,6 +158,14 @@
     function abrirDetalleOferta(id) {
         var overlay = document.getElementById('modalDetalleOferta');
         var body = document.getElementById('modalBody');
+
+        document.getElementById('modalTitulo').textContent = '';
+        document.getElementById('modalUbicacion').textContent = '';
+        document.getElementById('modalTipoContrato').textContent = '';
+        document.getElementById('modalHorario').textContent = '';
+
+        document.getElementById('modalEstadoBadge').innerHTML = '';
+
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
         body.innerHTML = '<div class="modal-loading"><div class="modal-loading-spinner"></div><p>Cargando detalle...</p></div>';

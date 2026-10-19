@@ -21,7 +21,14 @@
             <input type="hidden" name="format" value="jsp"/>
             <input type="hidden" name="accion" value="filtrar"/>
             <div class="form-group">
-                <input type="text" id="ubicacion" name="ubicacion" class="form-control" value="${fn:escapeXml(param.ubicacion)}" placeholder="Ej: San Salvador, Santa Ana..."/>
+                <label for="ubicacion" class="form-label">
+                    Buscar por ubicación
+                </label>
+                <input type="text" id="ubicacion" name="ubicacion"
+                       class="form-control"
+                       maxlength="100"
+                       value="${fn:escapeXml(param.ubicacion)}"
+                       placeholder="Ej: San Salvador, Santa Ana..."/>
             </div>
             <button type="submit" class="btn btn-primary">Filtrar</button>
             <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-secondary">Ver todas</a>
@@ -38,8 +45,17 @@
                 <div class="empty-state-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
                 </div>
-                <h3>No se encontraron ofertas</h3>
-                <p>No hay ofertas para esta ubicacion. Intenta con otra ciudad.</p>
+                <c:choose>
+                    <c:when test="${empty param.ubicacion}">
+                        <h3>Busca ofertas por ubicación</h3>
+                        <p>Ingresa una ciudad o departamento para encontrar ofertas de empleo.</p>
+                    </c:when>
+                    <c:otherwise>
+                        <h3>No se encontraron ofertas</h3>
+                        <p>No encontramos ofertas en la ubicación indicada.
+                           Intenta buscar en otra ciudad o departamento.</p>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </c:when>
         <c:otherwise>

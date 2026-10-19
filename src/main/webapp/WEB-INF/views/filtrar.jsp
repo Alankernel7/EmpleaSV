@@ -26,6 +26,7 @@
                 </label>
                 <input type="text" id="ubicacion" name="ubicacion"
                        class="form-control"
+                       maxlength="100"
                        value="${fn:escapeXml(param.ubicacion)}"
                        placeholder="Ej: San Salvador, Santa Ana..."/>
             </div>

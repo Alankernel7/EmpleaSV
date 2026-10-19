@@ -47,6 +47,7 @@
                     </label>
                     <input type="text" id="buscarTitulo" name="titulo"
                            class="form-control"
+                           maxlength="100"
                            value="${fn:escapeXml(param.titulo)}"
                            placeholder="Buscar por título..."/>
                 </div>

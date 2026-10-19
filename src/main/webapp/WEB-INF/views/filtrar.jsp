@@ -21,7 +21,13 @@
             <input type="hidden" name="format" value="jsp"/>
             <input type="hidden" name="accion" value="filtrar"/>
             <div class="form-group">
-                <input type="text" id="ubicacion" name="ubicacion" class="form-control" value="${fn:escapeXml(param.ubicacion)}" placeholder="Ej: San Salvador, Santa Ana..."/>
+                <label for="ubicacion" class="form-label">
+                    Buscar por ubicación
+                </label>
+                <input type="text" id="ubicacion" name="ubicacion"
+                       class="form-control"
+                       value="${fn:escapeXml(param.ubicacion)}"
+                       placeholder="Ej: San Salvador, Santa Ana..."/>
             </div>
             <button type="submit" class="btn btn-primary">Filtrar</button>
             <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-secondary">Ver todas</a>

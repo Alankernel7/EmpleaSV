@@ -42,7 +42,13 @@
                 <input type="hidden" name="format" value="jsp"/>
                 <input type="hidden" name="accion" value="buscar"/>
                 <div class="form-group">
-                    <input type="text" name="titulo" class="form-control" value="${fn:escapeXml(param.titulo)}" placeholder="Buscar por titulo..."/>
+                    <label for="buscarTitulo" class="form-label">
+                        Buscar oferta por título
+                    </label>
+                    <input type="text" id="buscarTitulo" name="titulo"
+                           class="form-control"
+                           value="${fn:escapeXml(param.titulo)}"
+                           placeholder="Buscar por título..."/>
                 </div>
                 <button type="submit" class="btn btn-primary">Buscar</button>
                 <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=filtrar" class="btn btn-secondary">Filtrar</a>

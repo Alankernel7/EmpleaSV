@@ -416,4 +416,79 @@ public class UsuarioApiServlet extends ApiServletBase {
 
         return texto.isEmpty() ? null : texto;
     }
+
+
+    // PATCH /api/usuarios/{id}/estado
+    @Override
+    protected void doPatch(HttpServletRequest request,
+                           HttpServletResponse response)
+            throws IOException {
+
+        response.setHeader("Cache-Control", "no-store");
+
+        try {
+            List<String> ruta = segmentos(request);
+
+            if (ruta.size() != 2
+                    || !"estado".equals(ruta.get(1))) {
+                throw new ApiExcepcion(
+                        404, "RECURSO_NO_ENCONTRADO",
+                        "La ruta solicitada no existe.");
+            }
+
+            Usuario admin = ApiSesion.requerirRol(
+                    request, UsuarioRol.ADMINISTRADOR);
+
+            Integer usuarioId = idDeRuta(request, 0);
+
+            if (usuarioId <= 0) {
+                throw new ApiExcepcion(
+                        400, "ID_INVALIDO",
+                        "El identificador debe ser positivo.");
+            }
+
+            exigirJson(request);
+            Map<String, Object> datos = leerObjeto(request);
+
+            Object valor = datos.get("estado");
+
+            if (!(valor instanceof String)
+                    || !Set.of("ACTIVO", "INACTIVO")
+                    .contains(valor)) {
+                throw new ApiExcepcion(
+                        400, "DATOS_INVALIDOS",
+                        "estado debe ser ACTIVO o INACTIVO.");
+            }
+
+            String estado = (String) valor;
+
+            String mensaje = adminService.cambiarEstadoUsuario(
+                    admin.getId(), usuarioId, estado);
+
+            responderOk(
+                    response,
+                    mensaje,
+                    Map.of(
+                            "id", usuarioId,
+                            "estado", estado)
+            );
+
+        } catch (AdminService.AdminException e) {
+
+            int codigo = e.getMessage() != null
+                    && e.getMessage().contains("no existe")
+                    ? 404 : 409;
+
+            manejar(new ApiExcepcion(
+                    codigo,
+                    codigo == 404
+                            ? "RECURSO_NO_ENCONTRADO"
+                            : "REGLA_NEGOCIO",
+                    e.getMessage()), response);
+
+        } catch (Exception e) {
+            manejar(e, response);
+        }
+    }
+
 }

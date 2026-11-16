@@ -384,4 +384,91 @@ public class OfertaApiServlet extends ApiServletBase {
                     "La transición de estado indicada no está permitida.");
         }
     }
+
+
+    // PATCH /api/ofertas/{id}/estado
+    @Override
+    protected void doPatch(HttpServletRequest request,
+                           HttpServletResponse response)
+            throws IOException {
+
+        try {
+            List<String> ruta = segmentos(request);
+
+            if (ruta.size() != 2
+                    || !"estado".equals(ruta.get(1))) {
+                throw new ApiExcepcion(
+                        404, "RECURSO_NO_ENCONTRADO",
+                        "La ruta solicitada no existe.");
+            }
+
+            Usuario usuario = ApiSesion.requerirRol(
+                    request,
+                    UsuarioRol.EMPRESA,
+                    UsuarioRol.ADMINISTRADOR);
+
+            OfertaEmpleo oferta = ofertaEditable(request);
+
+            exigirJson(request);
+            Map<String, Object> datos = leerObjeto(request);
+
+            Object valor = datos.get("estado");
+
+            if (!(valor instanceof String)
+                    || !Set.of("ACTIVA", "PAUSADA", "CERRADA")
+                    .contains(valor)) {
+                throw new ApiExcepcion(
+                        400, "DATOS_INVALIDOS",
+                        "estado debe ser ACTIVA, PAUSADA o CERRADA.");
+            }
+
+            String nuevoEstado = (String) valor;
+            String estadoAnterior = oferta.getEstado();
+
+            if (!Objects.equals(estadoAnterior, nuevoEstado)) {
+
+                validarTransicion(
+                        estadoAnterior,
+                        nuevoEstado,
+                        usuario.getRol());
+
+                if (usuario.getRol() == UsuarioRol.ADMINISTRADOR) {
+
+                    new AdminService().cambiarEstadoOferta(
+                            usuario.getId(),
+                            oferta.getId(),
+                            nuevoEstado);
+
+                } else {
+
+                    oferta.setEstado(nuevoEstado);
+
+                    if (!ofertaDAO.actualizar(oferta)) {
+                        throw new ApiExcepcion(
+                                500, "ERROR_INTERNO",
+                                "No se pudo actualizar la oferta.");
+                    }
+                }
+            }
+
+            responderOk(
+                    response,
+                    "Estado de la oferta actualizado.",
+                    Map.of(
+                            "id", oferta.getId(),
+                            "estado", nuevoEstado)
+            );
+
+        } catch (AdminService.AdminException e) {
+
+            manejar(new ApiExcepcion(
+                    409,
+                    "REGLA_NEGOCIO",
+                    e.getMessage()), response);
+
+        } catch (Exception e) {
+            manejar(e, response);
+        }
+    }
+
 }

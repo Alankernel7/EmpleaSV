@@ -3,7 +3,7 @@
 **Base URL local:** `http://localhost:8080/EmpleaSV/api`
 **Autenticación:** cookie de sesión `JSESSIONID` creada por `POST /api/auth/login`.
 **Formato:** JSON UTF-8, salvo descargas y subidas de archivos.
-**Estado:** contrato diseñado. Endpoints **no implementados** todavía.
+**Estado:** contrato diseñado. Endpoints implementados.
 
 ---
 

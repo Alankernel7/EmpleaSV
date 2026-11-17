@@ -30,6 +30,7 @@ import java.util.Map;
 
 @WebServlet(urlPatterns = {
         "/api/perfiles/candidato/foto",
+        "/api/perfiles/candidato/curriculums",
         "/api/perfiles/candidato/curriculums/*",
         "/api/perfiles/empresa/logo"
 })

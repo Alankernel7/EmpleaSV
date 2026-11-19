@@ -14,30 +14,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css?v=3">
 </head>
 <body>
-    <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <a class="nav-brand" href="${pageContext.request.contextPath}/inicio">
-                <span class="nav-brand-icon">E</span>
-                EmpleaSV
-            </a>
-            <button class="nav-toggle" onclick="document.getElementById('navCenter').classList.toggle('active')" aria-label="Menu">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-            </button>
-            <div class="nav-center" id="navCenter">
-                <a class="nav-link active" href="${pageContext.request.contextPath}/inicio">Inicio</a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/ofertas?format=jsp">Ofertas</a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/empresas">Empresas</a>
-                <a class="nav-link" href="${pageContext.request.contextPath}/ayuda.jsp">Ayuda</a>
-            </div>
-            <div class="nav-actions">
-                <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-ghost btn-sm">Iniciar sesion</a>
-                <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-primary btn-sm">Registrarse</a>
-            </div>
-        </div>
-    </nav>
+    <jsp:include page="nav.jsp" />
 
     <main>
         <!-- Hero -->
@@ -45,7 +25,7 @@
             <div class="container">
                 <div class="hero-content">
                     <h1>Encuentra tu proximo empleo</h1>
-                    <p>Explora miles de ofertas de empleo en El Salvador. Tu oportunidad esta aqui.</p>
+                    <p>Explora las ofertas de empleo publicadas por las empresas de El Salvador. Tu oportunidad esta aqui.</p>
                     <div class="hero-search">
                         <div class="hero-search-input">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -61,25 +41,25 @@
             </div>
         </section>
 
-        <!-- Stats -->
+        <!-- Stats: contadores reales calculados en InicioServlet -->
         <section class="stats-bar">
             <div class="container">
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <h3>500+</h3>
+                        <h3>${ofertasActivas}</h3>
                         <p>Ofertas activas</p>
                     </div>
                     <div class="stat-item">
-                        <h3>200+</h3>
+                        <h3>${totalEmpresas}</h3>
                         <p>Empresas</p>
                     </div>
                     <div class="stat-item">
-                        <h3>1,000+</h3>
+                        <h3>${totalCandidatos}</h3>
                         <p>Candidatos</p>
                     </div>
                     <div class="stat-item">
-                        <h3>100+</h3>
-                        <p>Empleos nuevos</p>
+                        <h3>${totalOfertas}</h3>
+                        <p>Ofertas publicadas</p>
                     </div>
                 </div>
             </div>
@@ -135,13 +115,13 @@
 
                             <%-- Título de la oferta --%>
                             <h4>
-                                ${oferta.titulo}
+                                <c:out value="${oferta.titulo}"/>
                             </h4>
 
 
                             <%-- Nombre de la empresa --%>
                             <p class="company">
-                                ${oferta.empresa.nombre}
+                                <c:out value="${oferta.empresa.nombre}"/>
                             </p>
 
 
@@ -150,7 +130,7 @@
 
                                 <%-- Ubicación --%>
                                 <span class="card-meta-item">
-                                    ${oferta.ubicacion}
+                                    <c:out value="${oferta.ubicacion}"/>
                                 </span>
 
 
@@ -176,7 +156,7 @@
 
                                 <%-- Tipo de contrato --%>
                                 <span class="card-meta-item">
-                                    ${oferta.tipoContrato}
+                                    <c:out value="${oferta.tipoContrato}"/>
                                 </span>
 
                             </div>
@@ -207,7 +187,7 @@
                             </div>
 
                             <h4>
-                                ${empresa.nombre}
+                                <c:out value="${empresa.nombre}"/>
                             </h4>
                         </a>
                     </c:forEach>
@@ -228,7 +208,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </div>
                         <h3>Busca empleo</h3>
-                        <p>Explora cientos de ofertas filtradas por ubicacion, salario y tipo de contrato.</p>
+                        <p>Explora las ofertas disponibles y filtra por ubicacion, salario y tipo de contrato.</p>
                     </div>
                     <div class="info-card">
                         <div class="info-card-icon">
@@ -242,11 +222,11 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         </div>
                         <h3>Postulate</h3>
-                        <p>Envia tu postulacion con un solo clic y da el siguiente paso en tu carrera.</p>
+                        <p>Completa tu perfil y sube tu curriculum para que las empresas conozcan tu experiencia.</p>
                     </div>
                 </div>
                 <div class="text-center mt-3">
-                    <a href="${pageContext.request.contextPath}/registro.jsp" class="btn btn-primary btn-lg">Crear cuenta gratis</a>
+                    <a href="${pageContext.request.contextPath}/auth?accion=registro" class="btn btn-primary btn-lg">Crear cuenta gratis</a>
                 </div>
             </div>
         </section>
@@ -260,7 +240,7 @@
                         <p>Publica tus ofertas y conecta con los mejores profesionales de El Salvador.</p>
                         <div class="flex gap-1" style="flex-wrap:wrap;">
                             <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=registrar" class="btn btn-lg">Publicar oferta</a>
-                            <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-outline btn-lg">Iniciar sesion</a>
+                            <a href="${pageContext.request.contextPath}/auth?accion=login" class="btn btn-outline btn-lg">Iniciar sesion</a>
                         </div>
                     </div>
                 </div>
@@ -286,7 +266,7 @@
                 <div>
                     <div class="footer-title">Candidatos</div>
                     <ul class="footer-links">
-                        <li><a href="${pageContext.request.contextPath}/perfil-candidato.jsp">Mi perfil</a></li>
+                        <li><a href="${pageContext.request.contextPath}/perfil">Mi perfil</a></li>
                         <li><a href="${pageContext.request.contextPath}/mis-postulaciones.jsp">Mis postulaciones</a></li>
                         <li><a href="${pageContext.request.contextPath}/ofertas-guardadas.jsp">Ofertas guardadas</a></li>
                     </ul>

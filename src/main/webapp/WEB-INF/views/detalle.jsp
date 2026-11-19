@@ -7,6 +7,12 @@
 </jsp:include>
 
 <div class="container section-sm">
+    <c:if test="${not empty mensajeExito}">
+        <div class="alert alert-success"><c:out value="${mensajeExito}"/></div>
+    </c:if>
+    <c:if test="${not empty mensajeError}">
+        <div class="alert alert-error"><c:out value="${mensajeError}"/></div>
+    </c:if>
     <c:choose>
         <c:when test="${empty oferta}">
             <div class="empty-state">
@@ -30,26 +36,21 @@
                 <div class="detail-card-header">
                     <div class="flex-between" style="flex-wrap:wrap; gap:0.75rem;">
                         <div>
-                            <h1>${oferta.titulo}</h1>
+                            <h1><c:out value="${oferta.titulo}"/></h1>
                             <div class="card-meta" style="margin-top:0.5rem;">
                                 <span class="card-meta-item">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                                    ${oferta.ubicacion}
+                                    <c:out value="${oferta.ubicacion}"/>
                                 </span>
-                                <span class="card-meta-item">${oferta.tipoContrato}</span>
+                                <span class="card-meta-item"><c:out value="${oferta.tipoContrato}"/></span>
                                 <c:if test="${not empty oferta.horario}">
-                                    <span class="card-meta-item">${oferta.horario}</span>
+                                    <span class="card-meta-item"><c:out value="${oferta.horario}"/></span>
                                 </c:if>
                             </div>
                         </div>
                         <c:if test="${not empty oferta.estado}">
-                            <span class="badge
-                                <c:choose>
-                                    <c:when test='${oferta.estado == "ACTIVA"}'>badge-success</c:when>
-                                    <c:when test='${oferta.estado == "PAUSADA"}'>badge-warning</c:when>
-                                    <c:otherwise>badge-danger</c:otherwise>
-                                </c:choose>
-                            " style="font-size:0.8rem; padding:0.3rem 0.75rem;">${oferta.estado}</span>
+                            <span class="badge ${oferta.estado == 'ACTIVA' ? 'badge-success' : (oferta.estado == 'PAUSADA' ? 'badge-warning' : 'badge-danger')}"
+                                  style="font-size:0.8rem; padding:0.3rem 0.75rem;"><c:out value="${oferta.estado}"/></span>
                         </c:if>
                     </div>
                 </div>
@@ -68,15 +69,22 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Tipo de contrato</span>
-                        <span class="detail-value">${oferta.tipoContrato}</span>
+                        <span class="detail-value"><c:out value="${oferta.tipoContrato}"/></span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Horario</span>
                         <span class="detail-value">${not empty oferta.horario ? oferta.horario : 'No especificado'}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Empresa ID</span>
-                        <span class="detail-value">${oferta.empresaId}</span>
+                        <span class="detail-label">Empresa</span>
+                        <span class="detail-value">
+                            <c:choose>
+                                <c:when test="${not empty oferta.empresa}">
+                                    <a href="${pageContext.request.contextPath}/empresas?accion=detalle&id=${oferta.empresaId}"><c:out value="${oferta.empresa.nombre}"/></a>
+                                </c:when>
+                                <c:otherwise>No especificada</c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Fecha de publicacion</span>
@@ -91,14 +99,14 @@
                     <c:if test="${not empty oferta.descripcion}">
                         <div class="detail-section">
                             <h3>Descripcion del puesto</h3>
-                            <p style="line-height:1.8; color:var(--gray-700);">${oferta.descripcion}</p>
+                            <p style="line-height:1.8; color:var(--gray-700);"><c:out value="${oferta.descripcion}"/></p>
                         </div>
                     </c:if>
 
                     <c:if test="${not empty oferta.requisitos}">
                         <div class="detail-section">
                             <h3>Requisitos</h3>
-                            <p style="line-height:1.8; color:var(--gray-700);">${oferta.requisitos}</p>
+                            <p style="line-height:1.8; color:var(--gray-700);"><c:out value="${oferta.requisitos}"/></p>
                         </div>
                     </c:if>
                 </div>
@@ -108,12 +116,16 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Postularme
                     </a>
-                    <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=editar&id=${oferta.id}" class="btn btn-secondary">Editar</a>
-                    <form action="${pageContext.request.contextPath}/ofertas" method="post" style="display:inline;" onsubmit="return confirm('Eliminar esta oferta?')">
-                        <input type="hidden" name="accion" value="eliminar"/>
-                        <input type="hidden" name="id" value="${oferta.id}"/>
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
+                    <c:set var="esPropia"
+                           value="${rolUsuario == 'ADMINISTRADOR' || (rolUsuario == 'EMPRESA' && not empty empresaIdSesion && empresaIdSesion == oferta.empresaId)}" />
+                    <c:if test="${esPropia}">
+                        <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=editar&id=${oferta.id}" class="btn btn-secondary">Editar</a>
+                        <form action="${pageContext.request.contextPath}/ofertas" method="post" style="display:inline;" onsubmit="return confirm('Eliminar esta oferta?')">
+                            <input type="hidden" name="accion" value="eliminar"/>
+                            <input type="hidden" name="id" value="${oferta.id}"/>
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </form>
+                    </c:if>
                 </div>
             </div>
         </c:otherwise>

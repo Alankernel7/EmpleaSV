@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <jsp:include page="header.jsp">
     <jsp:param name="tituloPagina" value="Editar Oferta"/>
@@ -29,7 +30,7 @@
             <c:if test="${not empty errores}">
                 <div class="alert alert-error">
                     <c:forEach var="error" items="${errores}">
-                        <div>${error}</div>
+                        <div><c:out value="${error}"/></div>
                     </c:forEach>
                 </div>
             </c:if>
@@ -43,24 +44,24 @@
                     <div class="form-group">
                         <label class="form-label" for="titulo">Titulo *</label>
                         <input type="text" id="titulo" name="titulo" class="form-control" required maxlength="200"
-                               value="${oferta.titulo}"/>
+                               value="${fn:escapeXml(oferta.titulo)}"/>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="descripcion">Descripcion *</label>
-                        <textarea id="descripcion" name="descripcion" class="form-control" required>${oferta.descripcion}</textarea>
+                        <textarea id="descripcion" name="descripcion" class="form-control" required>${fn:escapeXml(oferta.descripcion)}</textarea>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="requisitos">Requisitos</label>
-                        <textarea id="requisitos" name="requisitos" class="form-control">${oferta.requisitos}</textarea>
+                        <textarea id="requisitos" name="requisitos" class="form-control">${fn:escapeXml(oferta.requisitos)}</textarea>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label" for="ubicacion">Ubicacion *</label>
                             <input type="text" id="ubicacion" name="ubicacion" class="form-control" required maxlength="150"
-                                   value="${oferta.ubicacion}"/>
+                                   value="${fn:escapeXml(oferta.ubicacion)}"/>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="salario">Salario</label>
@@ -86,7 +87,7 @@
                         <div class="form-group">
                             <label class="form-label" for="horario">Horario *</label>
                             <input type="text" id="horario" name="horario" class="form-control" required maxlength="100"
-                                   value="${oferta.horario}"/>
+                                   value="${fn:escapeXml(oferta.horario)}"/>
                         </div>
                     </div>
 
@@ -104,32 +105,42 @@
                                 Empresa *
                             </label>
 
-                            <select id="empresa_id"
-                                    name="empresa_id"
-                                    class="form-control"
-                                    required>
+                            <c:choose>
+                                <c:when test="${not empty empresaPropiaId}">
+                                    <input type="hidden" name="empresa_id" id="empresa_id" value="${empresaPropiaId}">
+                                    <input type="text" class="form-control" disabled
+                                           value="${not empty empresas and not empty empresas[0].nombre ? empresas[0].nombre : 'Mi empresa'}">
+                                    <span class="form-hint">Las ofertas se publican a nombre de tu empresa.</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <select id="empresa_id"
+                                            name="empresa_id"
+                                            class="form-control"
+                                            required>
 
-                                <option value="">
-                                    Seleccione una empresa...
-                                </option>
+                                        <option value="">
+                                            Seleccione una empresa...
+                                        </option>
 
-                                <c:forEach var="empresa" items="${empresas}">
+                                        <c:forEach var="empresa" items="${empresas}">
 
-                                    <option value="${empresa.id}"
-                                            ${(not empty param.empresa_id
-                                            and param.empresa_id == empresa.id)
-                                            or
-                                            (empty param.empresa_id
-                                            and oferta.empresaId == empresa.id)
-                                            ? 'selected' : ''}>
+                                            <option value="${empresa.id}"
+                                                    ${(not empty param.empresa_id
+                                                    and param.empresa_id == empresa.id)
+                                                    or
+                                                    (empty param.empresa_id
+                                                    and oferta.empresaId == empresa.id)
+                                                    ? 'selected' : ''}>
 
-                                        ${empresa.nombre}
+                                                <c:out value="${empresa.nombre}"/>
 
-                                    </option>
+                                            </option>
 
-                                </c:forEach>
+                                        </c:forEach>
 
-                            </select>
+                                    </select>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
 

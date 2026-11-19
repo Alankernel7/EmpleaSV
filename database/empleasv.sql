@@ -1,3 +1,40 @@
+-- ============================================================
+-- EmpleaSV - Script único de instalación
+-- ============================================================
+-- Este archivo crea la base de datos completa de EmpleaSV
+-- desde cero: las siete tablas, relaciones, índices y datos
+-- de prueba de empresas y ofertas.
+--
+-- Convención de claves (aplicable a todo el proyecto):
+--   - La clave primaria de cada tabla se llama siempre `id`.
+--   - Las claves foráneas llevan nombres descriptivos de su
+--     relación: usuario_id, empresa_id, foto_perfil_id,
+--     curriculum_id, logo_id.
+--
+-- INSTALACIÓN NUEVA (único paso):
+--   1. Abrir phpMyAdmin (u otro cliente MySQL).
+--   2. Seleccionar/importar este archivo completo.
+--   3. La base de datos `empleasv` queda lista para la
+--      versión actual de la aplicación.
+--
+-- NO ejecutar este script sobre una base de datos que ya
+-- contenga datos: usa CREATE DATABASE IF NOT EXISTS y
+-- CREATE TABLE IF NOT EXISTS, pero los INSERT de datos de
+-- prueba sí se agregarían de nuevo. En instalaciones nuevas
+-- no hay conflicto.
+--
+-- CUENTA ADMINISTRADORA:
+--   Este script NO crea usuarios con contraseñas de ejemplo.
+--   Para crear el primer administrador de forma segura:
+--     a) Registrar una cuenta de candidato o empresa desde
+--        la aplicación (http://localhost:8080/EmpleaSV/auth?accion=registro),
+--        y luego, desde MySQL, promoverla:
+--          UPDATE usuario SET rol = 'ADMINISTRADOR'
+--           WHERE email = 'tu-correo@ejemplo.com';
+--     b) O generar un hash con PasswordUtil de la aplicación
+--        e insertar la fila con ese hash real.
+-- ============================================================
+
 CREATE DATABASE IF NOT EXISTS empleasv
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_general_ci;
@@ -6,31 +43,49 @@ USE empleasv;
 
 -- ------------------------------------------------------------
 -- Tabla: empresa
+-- Datos públicos de las empresas que publican ofertas.
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS empresa (
-    id          INT             AUTO_INCREMENT PRIMARY KEY,
-    nombre      VARCHAR(150)    NOT NULL,
-    descripcion TEXT,
-    categoria   VARCHAR(100)    NOT NULL,
-    email       VARCHAR(150)    NOT NULL,
-    telefono    VARCHAR(30)
+    id           INT             AUTO_INCREMENT PRIMARY KEY,
+    nombre       VARCHAR(150)    NOT NULL,
+    descripcion  TEXT,
+    categoria    VARCHAR(100)    NOT NULL,
+    email        VARCHAR(150)    NOT NULL,
+    telefono     VARCHAR(30)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
+-- Tabla: usuario
+-- Cuentas de la plataforma (candidato, empresa o administrador).
+-- `rol` es VARCHAR(20), compatible con el mapeo EnumType.STRING
+-- de Hibernate (USUARIO | EMPRESA | ADMINISTRADOR).
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS usuario (
+    id               INT             AUTO_INCREMENT PRIMARY KEY,
+    nombre             VARCHAR(150)    NOT NULL,
+    email              VARCHAR(150)    NOT NULL UNIQUE,
+    password_hash      VARCHAR(255)    NOT NULL,
+    rol                VARCHAR(20)     NOT NULL DEFAULT 'USUARIO',
+    estado             VARCHAR(20)     NOT NULL DEFAULT 'ACTIVO',
+    fecha_creacion     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
 -- Tabla: oferta_empleo
+-- Ofertas publicadas por una empresa de la tabla `empresa`.
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS oferta_empleo (
-    id                INT             AUTO_INCREMENT PRIMARY KEY,
-    titulo            VARCHAR(200)    NOT NULL,
-    descripcion       TEXT            NOT NULL,
-    requisitos        TEXT,
-    ubicacion         VARCHAR(150)    NOT NULL,
-    salario           DECIMAL(10,2),
-    tipo_contrato     VARCHAR(50)     NOT NULL,
-    horario           VARCHAR(100),
-    fecha_publicacion DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    estado            VARCHAR(30)     NOT NULL DEFAULT 'ACTIVA',
-    empresa_id        INT             NOT NULL,
+    id                  INT             AUTO_INCREMENT PRIMARY KEY,
+    titulo              VARCHAR(200)    NOT NULL,
+    descripcion         TEXT            NOT NULL,
+    requisitos          TEXT,
+    ubicacion           VARCHAR(150)    NOT NULL,
+    salario             DECIMAL(10,2),
+    tipo_contrato       VARCHAR(50)     NOT NULL,
+    horario             VARCHAR(100),
+    fecha_publicacion   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    estado              VARCHAR(30)     NOT NULL DEFAULT 'ACTIVA',
+    empresa_id          INT             NOT NULL,
     CONSTRAINT fk_oferta_empresa
         FOREIGN KEY (empresa_id)
         REFERENCES empresa(id)
@@ -38,10 +93,148 @@ CREATE TABLE IF NOT EXISTS oferta_empleo (
         ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE INDEX idx_oferta_empresa ON oferta_empleo(empresa_id);
+CREATE INDEX idx_oferta_estado ON oferta_empleo(estado);
+CREATE INDEX idx_oferta_ubicacion ON oferta_empleo(ubicacion);
 
 -- ------------------------------------------------------------
--- Datos de prueba: empresas
+-- Tabla: archivo
+-- Metadatos de archivos subidos (fotos de perfil, currículums,
+-- logos). Los archivos físicos se guardan fuera del directorio
+-- público, en la ruta configurada en web.xml.
 -- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS archivo (
+    id                  INT             AUTO_INCREMENT PRIMARY KEY,
+    nombre_original     VARCHAR(255)    NOT NULL,
+    nombre_almacenado   VARCHAR(255)    NOT NULL,
+    ruta_relativa       VARCHAR(500)    NOT NULL,
+    tipo_mime           VARCHAR(100)    NOT NULL,
+    extension           VARCHAR(20)     NOT NULL,
+    tamano_bytes        BIGINT          NOT NULL,
+    categoria           VARCHAR(30)     NOT NULL,  -- 'FOTO_PERFIL', 'CURRICULUM', 'LOGO_EMPRESA'
+    usuario_id          INT             NOT NULL,
+    fecha_subida        DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_archivo_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuario(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_archivo_usuario_categoria ON archivo(usuario_id, categoria);
+CREATE INDEX idx_archivo_categoria ON archivo(categoria);
+
+-- ------------------------------------------------------------
+-- Tabla: perfil_candidato
+-- Perfil extendido de los usuarios con rol USUARIO.
+-- Se crea automáticamente al registrarse como candidato o al
+-- editar el perfil.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS perfil_candidato (
+    id                      INT             AUTO_INCREMENT PRIMARY KEY,
+    usuario_id              INT             NOT NULL UNIQUE,
+    telefono                VARCHAR(30),
+    direccion_residencia    VARCHAR(255),
+    municipio               VARCHAR(100),
+    departamento            VARCHAR(100),
+    foto_perfil_id          INT             NULL,
+    curriculum_id           INT             NULL,
+    fecha_actualizacion     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_perfil_candidato_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuario(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_perfil_candidato_foto
+        FOREIGN KEY (foto_perfil_id)
+        REFERENCES archivo(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL,
+    CONSTRAINT fk_perfil_candidato_curriculum
+        FOREIGN KEY (curriculum_id)
+        REFERENCES archivo(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_perfil_candidato_usuario ON perfil_candidato(usuario_id);
+
+-- ------------------------------------------------------------
+-- Tabla: perfil_empresa
+-- Perfil de los usuarios con rol EMPRESA.
+-- `empresa_id` vincula la cuenta con la fila de `empresa` que
+-- publica las ofertas de empleo (misma fila que usa
+-- oferta_empleo.empresa_id). Cada cuenta solo puede tener una
+-- empresa y esa empresa no puede ser usada por otra cuenta.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS perfil_empresa (
+    id                      INT             AUTO_INCREMENT PRIMARY KEY,
+    usuario_id              INT             NOT NULL UNIQUE,
+    nombre_responsable      VARCHAR(150)    NOT NULL,
+    nombre_empresa          VARCHAR(150)    NOT NULL,
+    nit                     VARCHAR(50),
+    telefono_empresa        VARCHAR(30),
+    direccion_empresa       VARCHAR(255),
+    municipio               VARCHAR(100),
+    departamento            VARCHAR(100),
+    sector                  VARCHAR(100),
+    sitio_web               VARCHAR(255),
+    descripcion             TEXT,
+    logo_id                 INT             NULL,
+    empresa_id              INT             NULL,
+    fecha_actualizacion     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_perfil_empresa_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuario(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_perfil_empresa_logo
+        FOREIGN KEY (logo_id)
+        REFERENCES archivo(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL,
+    CONSTRAINT fk_perfil_empresa_empresa
+        FOREIGN KEY (empresa_id)
+        REFERENCES empresa(id)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_perfil_empresa_usuario ON perfil_empresa(usuario_id);
+CREATE INDEX idx_perfil_empresa_nombre ON perfil_empresa(nombre_empresa);
+CREATE UNIQUE INDEX uq_perfil_empresa_empresa ON perfil_empresa(empresa_id);
+
+-- ------------------------------------------------------------
+-- Tabla: auditoria
+-- Registro de acciones administrativas (activar/desactivar
+-- cuentas, cambiar estado de ofertas). Solo guarda el ID del
+-- administrador, la acción, el objetivo y la fecha: nunca
+-- contraseñas ni hashes. Sin borrado físico.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS auditoria (
+    id              INT             AUTO_INCREMENT PRIMARY KEY,
+    admin_id        INT             NOT NULL,
+    accion          VARCHAR(50)     NOT NULL,
+    objetivo_tipo   VARCHAR(30)     NOT NULL,
+    objetivo_id     INT             NULL,
+    detalle         VARCHAR(255)    NULL,
+    fecha           DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_auditoria_admin
+        FOREIGN KEY (admin_id)
+        REFERENCES usuario(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_auditoria_fecha ON auditoria(fecha);
+CREATE INDEX idx_auditoria_admin ON auditoria(admin_id);
+CREATE INDEX idx_auditoria_objetivo ON auditoria(objetivo_tipo, objetivo_id);
+
+-- ============================================================
+-- Datos de prueba: empresas
+-- (No incluye usuarios ni contraseñas; ver encabezado del
+-- archivo para crear el administrador de forma segura.)
+-- ============================================================
 
 INSERT INTO empresa
 (nombre, descripcion, categoria, email, telefono)
@@ -144,9 +337,9 @@ VALUES
      );
 
 
--- ------------------------------------------------------------
--- Datos de pruebas: ofertas de empleo
--- ------------------------------------------------------------
+-- ============================================================
+-- Datos de prueba: ofertas de empleo
+-- ============================================================
 
 INSERT INTO oferta_empleo
 (
@@ -523,7 +716,7 @@ VALUES
     'Especialista en Inteligencia de Negocios',
     'Diseño y desarrollo de dashboards, análisis de datos y generación de reportes para la toma de decisiones estratégicas.',
     'Experiencia en Power BI, Tableau o herramientas similares, conocimientos en SQL y habilidades analíticas.',
-    'San Miguel',
+    'San Salvador',
     1400.00,
     'Tiempo completo',
     '8:00 AM - 5:00 PM',
@@ -552,7 +745,7 @@ VALUES
 
 (
     'Analista de Procesos',
-    'Análisis y mejora de procesos internos, identificación de oportunidades de optimización y documentación de procedimientos.',
+    'Análisis y mejora de procesos internos, identificación de oportunidades de optimización y documentación de procesos.',
     'Experiencia en análisis de procesos, habilidades analíticas y conocimientos en metodologías de mejora continua.',
     'Santa Tecla',
     1300.00,
@@ -564,16 +757,16 @@ VALUES
 ),
 
 (
-     'Contador Fiscal',
-     'Responsable de la contabilidad fiscal de la empresa, elaboración de declaraciones tributarias y cumplimiento de obligaciones fiscales.',
-     'Experiencia en contabilidad fiscal, conocimientos en legislación tributaria y manejo de software contable.',
-     'San Salvador',
-     1100.00,
-     'Medio tiempo',
-     '8:00 AM - 5:00 PM',
-     '2026-09-11 10:20:00',
-     'ACTIVA',
-     11
+    'Contador Fiscal',
+    'Responsable de la contabilidad fiscal de la empresa, elaboración de declaraciones tributarias y cumplimiento de obligaciones fiscales.',
+    'Experiencia en contaduría, conocimientos en legislación tributaria y manejo de software contable.',
+    'San Salvador',
+    1100.00,
+    'Medio tiempo',
+    '8:00 AM - 5:00 PM',
+    '2026-09-11 10:20:00',
+    'ACTIVA',
+    11
 
 ),
 
@@ -596,7 +789,7 @@ VALUES
 
 (
     'Responsable de Soporte',
-    'Brindar soporte técnico a usuarios, resolución de incidencias y mantenimiento de equipos informáticos.',
+    'Brindar soporte técnico a usuarios, resolución de incidencias y mantenimiento de equipos de cómputo.',
     'Experiencia en soporte técnico, conocimientos en hardware, software y redes.',
     'San Miguel',
     900.00,

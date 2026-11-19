@@ -7,56 +7,29 @@
 
 <div class="container section-sm">
     <div class="page-header">
-        <h1>Mis postulaciones</h1>
-    </div>
-
-    <div class="alert alert-info">
-        Esta seccion es visual. La funcionalidad de postulaciones estara disponible proximamente.
-    </div>
-
-    <!-- Postulacion 1 -->
-    <div class="postulacion-card">
-        <div class="postulacion-info">
-            <h4>Desarrollador Full Stack</h4>
-            <p>TechCorp El Salvador | San Salvador | Postulada el 10/09/2026</p>
+        <div>
+            <h1>Mis postulaciones</h1>
+            <p class="text-muted" style="margin-top:0.35rem;">Historial de ofertas a las que te has postulado.</p>
         </div>
-        <span class="badge badge-success">Entrevista</span>
+        <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-secondary">Explorar ofertas</a>
     </div>
 
-    <!-- Postulacion 2 -->
-    <div class="postulacion-card">
-        <div class="postulacion-info">
-            <h4>Analista de Datos</h4>
-            <p>DataVision SA | La Libertad | Postulada el 08/09/2026</p>
+    <div class="aviso aviso-info">
+        <div>
+            <strong>Modulo de postulaciones no disponible</strong>
+            La plataforma todavia no registra postulaciones: esta parte del sistema no ha sido
+            implementada, por lo que aqui no hay informacion que mostrar. No se muestran datos de
+            ejemplo porque no existen en la base de datos.
         </div>
-        <span class="badge badge-warning">En revision</span>
     </div>
 
-    <!-- Postulacion 3 -->
-    <div class="postulacion-card">
-        <div class="postulacion-info">
-            <h4>Ingeniero de Software</h4>
-            <p>NetSolutions SV | San Salvador | Postulada el 05/09/2026</p>
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         </div>
-        <span class="badge badge-primary">Enviada</span>
-    </div>
-
-    <!-- Postulacion 4 -->
-    <div class="postulacion-card">
-        <div class="postulacion-info">
-            <h4>Responsable de Soporte TI</h4>
-            <p>Grupo Meridian | Santa Ana | Postulada el 01/09/2026</p>
-        </div>
-        <span class="badge badge-danger">Finalizada</span>
-    </div>
-
-    <!-- Postulacion 5 -->
-    <div class="postulacion-card">
-        <div class="postulacion-info">
-            <h4>Desarrollador Frontend</h4>
-            <p>Creative Studio | San Salvador | Postulada el 28/08/2026</p>
-        </div>
-        <span class="badge badge-success">Entrevista</span>
+        <h3>Sin postulaciones registradas</h3>
+        <p>Cuando el modulo este disponible, aqui apareceran las ofertas a las que te hayas postulado.</p>
+        <a href="${pageContext.request.contextPath}/ofertas?format=jsp" class="btn btn-primary">Ver ofertas disponibles</a>
     </div>
 </div>
 

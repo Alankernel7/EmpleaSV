@@ -29,19 +29,22 @@
             <li>Utiliza el buscador para filtrar por titulo o palabra clave.</li>
             <li>Filtra por ubicacion si buscas algo especifico.</li>
             <li>Haz clic en una oferta para ver los detalles completos.</li>
-            <li>Haz clic en "Postularme" para enviar tu postulacion.</li>
+            <li>Completa tu <a href="${pageContext.request.contextPath}/perfil">perfil de candidato</a> y sube tu curriculum para que las empresas puedan conocerte.</li>
         </ol>
+        <p style="color:var(--gray-500); font-size:0.85rem; margin-top:0.75rem;">
+            La funcion de postulacion todavia no esta disponible en la plataforma.
+        </p>
     </div>
 
     <!-- Como publicar una oferta -->
     <div class="card mb-2">
         <h3 style="margin-bottom:0.75rem;">Como publicar una oferta?</h3>
         <ol style="color:var(--gray-600); line-height:2; padding-left:1.25rem;">
-            <li>Crea una cuenta de empresa en <a href="${pageContext.request.contextPath}/registro.jsp">Registro</a>.</li>
+            <li>Crea una cuenta de empresa en <a href="${pageContext.request.contextPath}/auth?accion=registro">Registro</a>.</li>
             <li>Inicia sesion con tus credenciales.</li>
-            <li>Dirigete al <a href="${pageContext.request.contextPath}/panel-empresa.jsp">Panel de empresa</a>.</li>
+            <li>Dirigete al <a href="${pageContext.request.contextPath}/panel-empresa">Panel de empresa</a>.</li>
             <li>Haz clic en "Nueva oferta" y completa el formulario.</li>
-            <li>Publica tu oferta y comienza a recibir postulaciones.</li>
+            <li>Publica tu oferta: aparecera en el listado publico de ofertas de empleo.</li>
         </ol>
     </div>
 
@@ -65,19 +68,31 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </div>
         <div class="faq-answer">
-            Dirigete a tu <a href="${pageContext.request.contextPath}/perfil-candidato.jsp">perfil de candidato</a> y haz clic en
-            "Editar perfil". podras actualizar tu informacion personal, experiencia, educacion y habilidades.
+            Dirigete a tu <a href="${pageContext.request.contextPath}/perfil">perfil de candidato</a>: ahi puedes
+            actualizar tu nombre, correo, telefono, direccion, fotografia y curriculum.
         </div>
     </div>
 
     <div class="faq-item">
         <div class="faq-question">
-            Puedo postularme a varias ofertas?
+            Cuando estara disponible postularme a las ofertas?
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </div>
         <div class="faq-answer">
-            Si, puedes postularme a tantas ofertas como desees. Te recomendamos revisar los requisitos
-            de cada oferta antes de postularte.
+            Todavia no esta implementada la funcion de postulaciones ni la de guardar ofertas.
+            Estas secciones existen en el menu, pero no registran informacion porque el modulo
+            correspondiente no se ha desarrollado.
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">
+            Quien puede publicar ofertas de empleo?
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="faq-answer">
+            Solo las cuentas con rol de empresa. Al registrarte como empresa completas tu perfil
+            empresarial y cada cuenta publica unicamente las ofertas de su propia organizacion.
         </div>
     </div>
 

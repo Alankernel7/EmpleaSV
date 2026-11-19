@@ -13,7 +13,7 @@
             <p>Publica tus ofertas y conecta con los mejores profesionales de El Salvador.</p>
             <div class="flex gap-1" style="justify-content:center; flex-wrap:wrap;">
                 <a href="${pageContext.request.contextPath}/ofertas?format=jsp&accion=registrar" class="btn btn-lg" style="background:var(--white); color:var(--primary); font-weight:700;">Publicar oferta</a>
-                <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-outline btn-lg" style="color:var(--white); border-color:rgba(255,255,255,0.4);">Iniciar sesion</a>
+                <a href="${pageContext.request.contextPath}/auth?accion=login" class="btn btn-outline btn-lg" style="color:var(--white); border-color:rgba(255,255,255,0.4);">Iniciar sesion</a>
             </div>
         </div>
     </div>
@@ -35,7 +35,7 @@
                 </div>
 
                 <h4>
-                    ${empresa.nombre}
+                    <c:out value="${empresa.nombre}"/>
                 </h4>
 
                 <p>${empresa.categoria} | ${empresa.cantidadOfertas}

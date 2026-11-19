@@ -1,0 +1,64 @@
+﻿### 1. GET /ofertas?titulo=java
+- HTTP: 200
+- {"exito":true,"mensaje":"OK","datos":[{"id":1,"titulo":"Desarrollador Java Junior","descripcion":"Buscamos desarrollador junior para participar en el desarrollo y mantenimiento de aplicaciones web empresariales utilizando Java.","requisitos":"Estudiante o graduado de Ingenier├¡a en Sistemas, Ciencias de la Computaci├│n o carrera relacionada. Conocimientos de Java, SQL, HTML, CSS y Git.","ubicacion":"San Salvador","salario":850.00,"tipoContrato":"Tiempo completo","horario":"8:00 AM - 5:00 PM","fechaPublicacion":"2026-09-14T08:30","estado":"ACTIVA","empresaId":1,"empresaNombre":"NovaTech Solutions"}]}
+
+### 2. GET /ofertas/999999
+- HTTP: 404
+- 
+
+### 3. GET /perfiles/candidato (sin sesion)
+- HTTP: 401
+- 
+
+### 4. POST /auth/login invalido
+- HTTP: 401
+- 
+
+### 5. POST /auth/login (empresa)
+- HTTP: 200
+- {"exito":true,"mensaje":"Sesión iniciada correctamente.","datos":{"usuario":{"id":2,"nombre":"Juan L�pez","email":"empresa@prueba.com","rol":"EMPRESA","estado":"ACTIVO","fechaCreacion":"2026-11-18T21:02:52"},"empresaId":13}}
+
+### 6. GET /admin/dashboard (rol EMPRESA)
+- HTTP: 403
+- 
+
+### 7. POST /ofertas (empresa)
+- HTTP: 201
+- {"exito":true,"mensaje":"Oferta registrada correctamente.","datos":{"id":32,"titulo":"Prueba Cliente REST","descripcion":"Oferta creada por el cliente independiente durante las pruebas.","requisitos":"Java","ubicacion":"Santa Ana","salario":750.00,"tipoContrato":"Tiempo completo","horario":"8:00 AM - 4:00 PM","fechaPublicacion":"2026-11-18T21:11:17.598862600","estado":"ACTIVA","empresaId":13,"empresaNombre":"NovaTech Solutions"}}
+
+### 8. PUT /ofertas/32
+- HTTP: 200
+- {"exito":true,"mensaje":"Oferta actualizada correctamente.","datos":{"id":32,"titulo":"Prueba Cliente REST v2","descripcion":"Oferta actualizada con PUT.","requisitos":null,"ubicacion":"Santa Ana","salario":800.00,"tipoContrato":"Tiempo completo","horario":null,"fechaPublicacion":"2026-11-18T21:11:17","estado":"ACTIVA","empresaId":13,"empresaNombre":"NovaTech Solutions"}}
+
+### 9. PATCH /ofertas/32/estado -> PAUSADA
+- HTTP: 200
+- {"exito":true,"mensaje":"Estado de la oferta actualizado.","datos":{"id":32,"estado":"PAUSADA"}}
+
+### 10. PATCH estado repetido (409 esperado)
+- HTTP: 200
+- {"exito":true,"mensaje":"Estado de la oferta actualizado.","datos":{"id":32,"estado":"PAUSADA"}}
+
+### 11. DELETE /ofertas/32
+- HTTP: 204
+- 
+
+### 12. POST /auth/login (admin)
+- HTTP: 200
+- {"exito":true,"mensaje":"Sesión iniciada correctamente.","datos":{"usuario":{"id":3,"nombre":"Admin Prueba","email":"admin@prueba.com","rol":"ADMINISTRADOR","estado":"ACTIVO","fechaCreacion":"2026-11-18T21:02:52"},"empresaId":null}}
+
+### 13. GET /admin/dashboard (admin)
+- HTTP: 200
+- {"exito":true,"mensaje":"OK","datos":{"usuarios":{"total":3,"candidatosActivos":1,"empresasActivas":1,"administradoresActivos":1},"ofertas":{"ACTIVA":26,"PAUSADA":2,"CERRADA":2},"usuariosRecientes":[{"id":2,"nombre":"Juan L�pez","email":"empresa@prueba.com","rol":"EMPRESA","estado":"ACTIVO","fechaCreacion":"2026-11-18T21:02:52"},{"id":3,"nombre":"Admin Prueba","email":"admin@prueba.com","rol":"ADMINISTRADOR","estado":"ACTIVO","fechaCreacion":"2026-11-18T21:02:52"},{"id":1,"nombre":"Ana P�rez","email":"candidato@prueba.com","rol":"USUARIO","estado":"ACTIVO","fechaCreacion":"2026-11-18T21:02:51"}],"ofertasRecientes":[{"id":1,"titulo":"Desarrollador Java Junior","descripcion":"Buscamos desarrollador junior para participar en el desarrollo y mantenimiento de aplicaciones web empresariales utilizando Java.","requisitos":"Estudiante o graduado de Ingenier├¡a en Sistemas, Ciencias de la Computaci├│n o carrera relacionada. Conocimientos de Java, SQL, HTML, CSS y Git.","ubicacion":"San Salvador","salario":850.00,"tipoContrato":"Tiempo completo","horario":"8:00 AM - 5:00 PM","fechaPublicacion":"2026-09-14T08:30","estado":"ACTIVA","empresaId":1,"empresaNombre":"NovaTech Solutions"},{"id":30,"titulo":"Responsable de Soporte","descripcion":"Brindar soporte t├®cnico a usuarios, resoluci├│n de incidencias y mantenimiento de equipos de c├│mputo.","requisitos":"Experiencia en soporte t├®cnico, conocimientos en hardware, software y redes.","ubicacion":"San Miguel","salario":900.00,"tipoContrato":"Tiempo completo","horario":"9:00 AM - 6:00 PM","fechaPublicacion":"2026-09-13T10:45","estado":"ACTIVA","empresaId":12,"empresaNombre":"NetSolutions SV"},{"id":12,"titulo":"Ejecutivo de Ventas","descripcion":"Prospecci├│n de clientes, seguimiento de oportunidades comerciales, elaboraci├│n de cotizaciones y cumplimiento de metas mensuales.","requisitos":"Experiencia en ventas, facilidad de comunicaci├│n, orientaci├│n a resultados y manejo b├ísico de herramientas inform├íticas.","ubicacion":"San Salvador","salario":600.00,"tipoContrato":"Tiempo completo","horario":"8:30 AM - 5:30 PM","fechaPublicacion":"2026-09-13T09:35","estado":"ACTIVA","empresaId":6,"empresaNombre":"Conecta Business"},{"id":4,"titulo":"Dise├▒ador UI/UX Junior","descripcion":"Creaci├│n de interfaces digitales, prototipos y piezas gr├íficas para proyectos web y campa├▒as digitales.","requisitos":"Manejo de Figma, principios de dise├▒o UI/UX, dise├▒o responsivo y portafolio de trabajos.","ubicacion":"Santa Tecla","salario":750.00,"tipoContrato":"Tiempo completo","horario":"9:00 AM - 6:00 PM","fechaPublicacion":"2026-09-12T13:20","estado":"ACTIVA","empresaId":2,"empresaNombre":"Grupo Creativa"},{"id":29,"titulo":"Administrador de Sistemas","descripcion":"Gesti├│n y mantenimiento de servidores, redes y sistemas inform├íticos de la empresa.","requisitos":"Experiencia en administraci├│n de sistemas, conocimientos en Windows Server, Linux y redes.","ubicacion":"San Salvador","salario":1400.00,"tipoContrato":"Tiempo completo","horario":"8:00 AM - 5:00 PM","fechaPublicacion":"2026-09-12T09:30","estado":"ACTIVA","empresaId":12,"empresaNombre":"NetSolutions SV"}],"auditoriaReciente":[]}}
+
+### 14. GET /empresas/1/ofertas
+- HTTP: 200
+- {"exito":true,"mensaje":"OK","datos":[{"id":1,"titulo":"Desarrollador Java Junior","descripcion":"Buscamos desarrollador junior para participar en el desarrollo y mantenimiento de aplicaciones web empresariales utilizando Java.","requisitos":"Estudiante o graduado de Ingenier├¡a en Sistemas, Ciencias de la Computaci├│n o carrera relacionada. Conocimientos de Java, SQL, HTML, CSS y Git.","ubicacion":"San Salvador","salario":850.00,"tipoContrato":"Tiempo completo","horario":"8:00 AM - 5:00 PM","fechaPublicacion":"2026-09-14T08:30","estado":"ACTIVA","empresaId":1,"empresaNombre":"NovaTech Solutions"},{"id":2,"titulo":"Desarrollador Frontend","descripcion":"Responsable de implementar interfaces web responsivas y colaborar con el equipo de dise├▒o y desarrollo backend.","requisitos":"Conocimientos de HTML5, CSS3, JavaScript, dise├▒o responsivo y consumo de APIs REST.","ubicacion":"Antiguo Cuscatl├ín","salario":950.00,"tipoContrato":"Tiempo completo","horario":"8:00 AM - 5:00 PM","fechaPublicacion":"2026-09-10T10:15","estado":"ACTIVA","empresaId":1,"empresaNombre":"NovaTech Solutions"},{"id":3,"titulo":"Practicante de Desarrollo Web","descripcion":"Apoyo en desarrollo, pruebas y mantenimiento de aplicaciones internas bajo supervisi├│n del equipo de tecnolog├¡a.","requisitos":"Estudiante universitario con conocimientos b├ísicos de Java, HTML, CSS, JavaScript y bases de datos.","ubicacion":"San Salvador","salario":400.00,"tipoContrato":"Practica","horario":"8:00 AM - 1:00 PM","fechaPublicacion":"2026-09-03T09:00","estado":"ACTIVA","empresaId":1,"empresaNombre":"NovaTech Solutions"}]}
+
+### 15. POST /auth/logout
+- HTTP: 204
+- 
+
+### 16. GET /ofertas?mias=true tras logout (401 esperado)
+- HTTP: 401
+- 
+

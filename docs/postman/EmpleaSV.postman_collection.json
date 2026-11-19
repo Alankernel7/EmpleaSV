@@ -1,0 +1,583 @@
+{
+  "info": {
+    "name": "EmpleaSV API REST — Fase 3",
+    "description": "Colección de pruebas de la API REST de EmpleaSV.\n\n**Orden sugerido:** ejecutar primero `Auth › Login (empresa)` (o el rol que necesites); la cookie JSESSIONID se guarda automáticamente en `pm.cookies` y las siguientes peticiones la reutilizan.\n\nContrato completo: `docs/fase3/contrato_api.md`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/EmpleaSV/api" },
+    { "key": "emailEmpresa", "value": "empresa@prueba.com" },
+    { "key": "password", "value": "Prueba123" },
+    { "key": "emailCandidato", "value": "candidato@prueba.com" },
+    { "key": "emailAdmin", "value": "admin@prueba.com" },
+    { "key": "ofertaId", "value": "1" },
+    { "key": "empresaId", "value": "1" },
+    { "key": "usuarioId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (empresa)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 - login exitoso', () => pm.response.to.have.status(200));",
+                  "pm.test('exito = true', () => pm.expect(pm.response.json().exito).to.be.true);",
+                  "pm.test('devuelve usuario con rol', () => {",
+                  "  const d = pm.response.json().datos;",
+                  "  pm.expect(d.usuario).to.have.property('email');",
+                  "  pm.expect(d.usuario.rol).to.be.oneOf(['USUARIO','EMPRESA','ADMINISTRADOR']);",
+                  "});",
+                  "pm.environment.set('emailEmpresa', pm.response.json().datos.usuario.email);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{emailEmpresa}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "description": "POST /api/auth/login — guarda la cookie JSESSIONID para el resto de la colección."
+          }
+        },
+        {
+          "name": "Login (candidato)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 - login exitoso', () => pm.response.to.have.status(200));",
+                  "pm.test('rol USUARIO', () => pm.expect(pm.response.json().datos.usuario.rol).to.equal('USUARIO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{emailCandidato}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login inválido (401 esperado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('401 - credenciales invalidas', () => pm.response.to.have.status(401));",
+                  "pm.test('codigo CREDENCIALES_INVALIDAS', () => pm.expect(pm.response.json().error.codigo).to.equal('CREDENCIALES_INVALIDAS'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"no-existe@prueba.com\",\n  \"password\": \"incorrecta\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Sesión actual",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 - sesion activa', () => pm.response.to.have.status(200));",
+                  "pm.test('no expone passwordHash', () => pm.expect(pm.response.text()).to.not.include('passwordHash'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/sesion", "host": ["{{baseUrl}}"], "path": ["auth", "sesion"] },
+            "description": "GET /api/auth/sesion — requiere cookie de sesión."
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('204 - sin contenido', () => pm.response.to.have.status(204));"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] },
+            "description": "Ejecutar al final; tras esto los endpoints privados devuelven 401."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Registro candidato (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 - creado', () => pm.response.to.have.status(201));",
+                  "pm.test('exito = true', () => pm.expect(pm.response.json().exito).to.be.true);",
+                  "pm.test('Location presente', () => pm.expect(pm.response.headers.get('Location')).to.not.be.null);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rol\": \"USUARIO\",\n  \"nombre\": \"Ana Pérez\",\n  \"email\": \"ana.perez@prueba.com\",\n  \"password\": \"Prueba123\",\n  \"password2\": \"Prueba123\",\n  \"telefono\": \"7777-1234\",\n  \"direccion\": \"Col. Escalón, San Salvador\",\n  \"municipio\": \"San Salvador\",\n  \"departamento\": \"San Salvador\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] },
+            "description": "Usar un email distinto en cada ejecución: 409 CONFLICTO si se repite."
+          }
+        },
+        {
+          "name": "Listar usuarios (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('es lista', () => pm.expect(pm.response.json().datos).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/usuarios?rol=USUARIO&estado=ACTIVO",
+              "host": ["{{baseUrl}}"],
+              "path": ["usuarios"],
+              "query": [{ "key": "rol", "value": "USUARIO" }, { "key": "estado", "value": "ACTIVO" }]
+            },
+            "description": "Requiere sesión ADMINISTRADOR."
+          }
+        },
+        {
+          "name": "Detalle de usuario",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/usuarios/{{usuarioId}}", "host": ["{{baseUrl}}"], "path": ["usuarios", "{{usuarioId}}"] },
+            "description": "Propio o admin; 403 para terceros."
+          }
+        },
+        {
+          "name": "Cambiar estado de usuario (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"ACTIVO\"\n}" },
+            "url": { "raw": "{{baseUrl}}/usuarios/{{usuarioId}}/estado", "host": ["{{baseUrl}}"], "path": ["usuarios", "{{usuarioId}}", "estado"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Empresas (público)",
+      "item": [
+        {
+          "name": "Listar empresas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('sin datos sensibles', () => {",
+                  "  const t = pm.response.text();",
+                  "  pm.expect(t).to.not.include('nit');",
+                  "  pm.expect(t).to.not.include('passwordHash');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/empresas", "host": ["{{baseUrl}}"], "path": ["empresas"] }
+          }
+        },
+        {
+          "name": "Empresas destacadas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/empresas?destacadas=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["empresas"],
+              "query": [{ "key": "destacadas", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "Detalle de empresa",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/empresas/{{empresaId}}", "host": ["{{baseUrl}}"], "path": ["empresas", "{{empresaId}}"] }
+          }
+        },
+        {
+          "name": "Ofertas de una empresa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('solo ACTIVA sin sesión', () => {",
+                  "  const d = pm.response.json().datos;",
+                  "  d.forEach(o => pm.expect(o.estado).to.equal('ACTIVA'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/empresas/{{empresaId}}/ofertas", "host": ["{{baseUrl}}"], "path": ["empresas", "{{empresaId}}", "ofertas"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ofertas",
+      "item": [
+        {
+          "name": "Listar ofertas (público)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('exito = true', () => pm.expect(pm.response.json().exito).to.be.true);",
+                  "pm.test('solo ofertas ACTIVAS', () => {",
+                  "  pm.response.json().datos.forEach(o => pm.expect(o.estado).to.equal('ACTIVA'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/ofertas", "host": ["{{baseUrl}}"], "path": ["ofertas"] }
+          }
+        },
+        {
+          "name": "Buscar ofertas por título y ubicación",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/ofertas?titulo=java&ubicacion=San Salvador",
+              "host": ["{{baseUrl}}"],
+              "path": ["ofertas"],
+              "query": [
+                { "key": "titulo", "value": "java" },
+                { "key": "ubicacion", "value": "San Salvador" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detalle de oferta",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/ofertas/{{ofertaId}}", "host": ["{{baseUrl}}"], "path": ["ofertas", "{{ofertaId}}"] }
+          }
+        },
+        {
+          "name": "Oferta inexistente (404 esperado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));",
+                  "pm.test('RECURSO_NO_ENCONTRADO', () => pm.expect(pm.response.json().error.codigo).to.equal('RECURSO_NO_ENCONTRADO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/ofertas/999999", "host": ["{{baseUrl}}"], "path": ["ofertas", "999999"] }
+          }
+        },
+        {
+          "name": "Crear oferta (empresa) — 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 - creada', () => pm.response.to.have.status(201));",
+                  "pm.test('guardar id nuevo', () => {",
+                  "  const id = pm.response.json().datos.id;",
+                  "  pm.environment.set('ofertaId', String(id));",
+                  "});",
+                  "pm.test('Location del recurso', () => pm.expect(pm.response.headers.get('Location')).to.include('/api/ofertas/'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java Junior\",\n  \"descripcion\": \"Buscamos desarrollador junior para aplicaciones web.\",\n  \"requisitos\": \"Java, SQL, HTML, CSS y Git.\",\n  \"ubicacion\": \"San Salvador\",\n  \"salario\": 850.00,\n  \"tipoContrato\": \"Tiempo completo\",\n  \"horario\": \"8:00 AM - 5:00 PM\",\n  \"estado\": \"ACTIVA\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/ofertas", "host": ["{{baseUrl}}"], "path": ["ofertas"] },
+            "description": "Requiere sesión de EMPRESA (ejecutar Login (empresa) antes). Actualiza la variable ofertaId."
+          }
+        },
+        {
+          "name": "Crear oferta sin sesión (401 esperado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('401', () => pm.response.to.have.status(401));",
+                  "pm.test('NO_AUTENTICADO', () => pm.expect(pm.response.json().error.codigo).to.equal('NO_AUTENTICADO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"x\",\n  \"descripcion\": \"x\",\n  \"ubicacion\": \"x\",\n  \"tipoContrato\": \"x\"\n}" },
+            "url": { "raw": "{{baseUrl}}/ofertas", "host": ["{{baseUrl}}"], "path": ["ofertas"] },
+            "description": "Ejecutar DESPUÉS de Logout para ver el 401."
+          }
+        },
+        {
+          "name": "Actualizar oferta (PUT)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java Junior (actualizado)\",\n  \"descripcion\": \"Buscamos desarrollador junior para aplicaciones web.\",\n  \"ubicacion\": \"San Salvador\",\n  \"salario\": 900.00,\n  \"tipoContrato\": \"Tiempo completo\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/ofertas/{{ofertaId}}", "host": ["{{baseUrl}}"], "path": ["ofertas", "{{ofertaId}}"] },
+            "description": "Sesión EMPRESA dueña o ADMIN."
+          }
+        },
+        {
+          "name": "Cambiar estado a PAUSADA (PATCH)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"PAUSADA\"\n}" },
+            "url": { "raw": "{{baseUrl}}/ofertas/{{ofertaId}}/estado", "host": ["{{baseUrl}}"], "path": ["ofertas", "{{ofertaId}}", "estado"] },
+            "description": "Transiciones válidas: ACTIVA↔PAUSADA, ACTIVA→CERRADA, PAUSADA→CERRADA."
+          }
+        },
+        {
+          "name": "Transición inválida (409 esperado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));",
+                  "pm.test('REGLA_NEGOCIO', () => pm.expect(pm.response.json().error.codigo).to.equal('REGLA_NEGOCIO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"ACTIVA\"\n}" },
+            "url": { "raw": "{{baseUrl}}/ofertas/1/estado", "host": ["{{baseUrl}}"], "path": ["ofertas", "1", "estado"] },
+            "description": "Si la oferta #1 está ACTIVA, activarla de nuevo viola la regla (409)."
+          }
+        },
+        {
+          "name": "Eliminar oferta (DELETE — 204)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('204', () => pm.response.to.have.status(204));"] } }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/ofertas/{{ofertaId}}", "host": ["{{baseUrl}}"], "path": ["ofertas", "{{ofertaId}}"] },
+            "description": "Elimina la oferta creada en la prueba anterior (mantiene la BD limpia)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perfiles",
+      "item": [
+        {
+          "name": "Perfil de candidato",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/perfiles/candidato", "host": ["{{baseUrl}}"], "path": ["perfiles", "candidato"] },
+            "description": "Requiere sesión USUARIO."
+          }
+        },
+        {
+          "name": "Actualizar perfil de candidato (PUT)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana Pérez\",\n  \"email\": \"candidato@prueba.com\",\n  \"telefono\": \"7777-5678\",\n  \"direccion\": \"Col. Escalón, San Salvador\",\n  \"municipio\": \"San Salvador\",\n  \"departamento\": \"San Salvador\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/perfiles/candidato", "host": ["{{baseUrl}}"], "path": ["perfiles", "candidato"] }
+          }
+        },
+        {
+          "name": "Currículums del candidato",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/perfiles/candidato/curriculums", "host": ["{{baseUrl}}"], "path": ["perfiles", "candidato", "curriculums"] }
+          }
+        },
+        {
+          "name": "Subir currículum (multipart)",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "curriculum", "type": "file", "src": [] },
+                { "key": "principal", "value": "true", "type": "text" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/perfiles/candidato/curriculums", "host": ["{{baseUrl}}"], "path": ["perfiles", "candidato", "curriculums"] },
+            "description": "Adjuntar un PDF en el campo curriculum (máx 5 MB)."
+          }
+        },
+        {
+          "name": "Perfil de empresa",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/perfiles/empresa", "host": ["{{baseUrl}}"], "path": ["perfiles", "empresa"] },
+            "description": "Requiere sesión EMPRESA."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Administración",
+      "item": [
+        {
+          "name": "Dashboard (admin)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard"] },
+            "description": "Requiere sesión ADMINISTRADOR (admin@prueba.com)."
+          }
+        },
+        {
+          "name": "Auditoría (admin)",
+          "event": [
+            { "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"] } }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/auditoria?limite=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "auditoria"],
+              "query": [{ "key": "limite", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Acceso sin rol admin (403 esperado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));",
+                  "pm.test('PROHIBIDO', () => pm.expect(pm.response.json().error.codigo).to.equal('PROHIBIDO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard"] },
+            "description": "Con sesión de EMPRESA o USUARIO."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Archivos",
+      "item": [
+        {
+          "name": "Descargar archivo (binario)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/archivos/1", "host": ["{{baseUrl}}"], "path": ["archivos", "1"] },
+            "description": "Devuelve el binario con su Content-Type real. Requiere cookie del propietario o admin. 403 para terceros."
+          }
+        }
+      ]
+    }
+  ]
+}

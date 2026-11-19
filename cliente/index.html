@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EmpleaSV — Cliente REST</title>
+  <link rel="stylesheet" href="css/cliente.css">
+</head>
+<body>
+  <header class="cabecera">
+    <div class="marca">
+      <h1>EmpleaSV <span>· Cliente REST independiente</span></h1>
+      <p>Fase 3 — Consumo de la API</p>
+    </div>
+    <div class="sesion-badge" id="sesionBadge">Sin sesión</div>
+  </header>
+
+  <div class="config-barra">
+    <label for="baseUrl">Base URL:</label>
+    <input type="text" id="baseUrl" spellcheck="false">
+    <button id="btnGuardarUrl" class="btn btn-suave">Guardar</button>
+    <button id="btnProbarApi" class="btn btn-suave">Probar conexión</button>
+  </div>
+
+  <nav class="pestanas" role="tablist">
+    <button class="pestana activa" data-vista="ofertas">Ofertas</button>
+    <button class="pestana" data-vista="empresas">Empresas</button>
+    <button class="pestana" data-vista="sesion">Sesión / Registro</button>
+    <button class="pestana" data-vista="operaciones">Operaciones (CRUD)</button>
+    <button class="pestana" data-vista="perfiles">Perfiles y Admin</button>
+    <button class="pestana" data-vista="consola">Consola de peticiones</button>
+  </nav>
+
+  <main>
+    <!-- ===================== OFERTAS ===================== -->
+    <section class="vista activa" id="vista-ofertas">
+      <div class="panel">
+        <h2>Consultar ofertas <small>GET /api/ofertas</small></h2>
+        <form id="formFiltros" class="filtros">
+          <div class="campo">
+            <label for="fTitulo">Título</label>
+            <input type="text" id="fTitulo" placeholder="java, contador...">
+          </div>
+          <div class="campo">
+            <label for="fUbicacion">Ubicación</label>
+            <input type="text" id="fUbicacion" placeholder="San Salvador">
+          </div>
+          <div class="campo">
+            <label for="fEmpresaId">ID Empresa</label>
+            <input type="number" id="fEmpresaId" min="1" placeholder="1">
+          </div>
+          <button class="btn" type="submit">Buscar</button>
+          <button class="btn btn-suave" type="button" id="btnTodas">Ver todas</button>
+        </form>
+        <div id="listaOfertas" class="rejilla"></div>
+      </div>
+
+      <div class="panel" id="panelDetalleOferta" hidden>
+        <h2>Detalle de oferta <small>GET /api/ofertas/{id}</small></h2>
+        <div id="detalleOferta"></div>
+      </div>
+    </section>
+
+    <!-- ===================== EMPRESAS ===================== -->
+    <section class="vista" id="vista-empresas">
+      <div class="panel">
+        <h2>Directorio de empresas <small>GET /api/empresas</small></h2>
+        <div class="filtros">
+          <label class="check"><input type="checkbox" id="fDestacadas"> Solo destacadas</label>
+          <button class="btn" id="btnEmpresas">Listar</button>
+        </div>
+        <div id="listaEmpresas" class="rejilla"></div>
+      </div>
+      <div class="panel" id="panelDetalleEmpresa" hidden>
+        <h2>Empresa y sus ofertas <small>GET /api/empresas/{id} · GET /api/empresas/{id}/ofertas</small></h2>
+        <div id="detalleEmpresa"></div>
+      </div>
+    </section>
+
+    <!-- ===================== SESIÓN ===================== -->
+    <section class="vista" id="vista-sesion">
+      <div class="panel">
+        <h2>Iniciar sesión <small>POST /api/auth/login</small></h2>
+        <form id="formLogin" class="formulario">
+          <div class="campo">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" required value="empresa@prueba.com">
+          </div>
+          <div class="campo">
+            <label for="loginPassword">Contraseña</label>
+            <input type="password" id="loginPassword" required value="Prueba123">
+          </div>
+          <button class="btn" type="submit">Entrar</button>
+        </form>
+        <p class="ayuda">Cuentas de prueba: <code>candidato@prueba.com</code>, <code>empresa@prueba.com</code>, <code>admin@prueba.com</code> — contraseña <code>Prueba123</code></p>
+        <button class="btn btn-peligro" id="btnLogout" hidden>Cerrar sesión <small>POST /api/auth/logout</small></button>
+        <div id="estadoSesion" class="estado"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Registro de cuenta <small>POST /api/usuarios</small></h2>
+        <form id="formRegistro" class="formulario">
+          <div class="campo">
+            <label for="regRol">Rol</label>
+            <select id="regRol">
+              <option value="USUARIO">Candidato (USUARIO)</option>
+              <option value="EMPRESA">Empresa (EMPRESA)</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="regNombre">Nombre</label>
+            <input type="text" id="regNombre" required>
+          </div>
+          <div class="campo">
+            <label for="regEmail">Email</label>
+            <input type="email" id="regEmail" required>
+          </div>
+          <div class="campo">
+            <label for="regPassword">Contraseña</label>
+            <input type="password" id="regPassword" required>
+          </div>
+          <button class="btn" type="submit">Registrarme</button>
+        </form>
+        <div id="respuestaRegistro" class="estado"></div>
+      </div>
+    </section>
+
+    <!-- ===================== OPERACIONES ===================== -->
+    <section class="vista" id="vista-operaciones">
+      <div class="panel">
+        <h2>Mis ofertas <small>GET /api/ofertas?mias=true</small> <span class="requisito">Requiere sesión EMPRESA o ADMIN</span></h2>
+        <button class="btn" id="btnMisOfertas">Cargar mis ofertas</button>
+        <div id="listaMisOfertas" class="rejilla"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Crear oferta <small>POST /api/ofertas</small></h2>
+        <form id="formOferta" class="formulario">
+          <div class="campo"><label for="oTitulo">Título *</label><input type="text" id="oTitulo" required></div>
+          <div class="campo"><label for="oDescripcion">Descripción *</label><textarea id="oDescripcion" required></textarea></div>
+          <div class="campo"><label for="oRequisitos">Requisitos</label><textarea id="oRequisitos"></textarea></div>
+          <div class="campo"><label for="oUbicacion">Ubicación *</label><input type="text" id="oUbicacion" required></div>
+          <div class="campo"><label for="oSalario">Salario</label><input type="number" id="oSalario" min="0" step="0.01"></div>
+          <div class="campo"><label for="oTipoContrato">Tipo de contrato *</label>
+            <select id="oTipoContrato" required>
+              <option>Tiempo completo</option><option>Medio tiempo</option>
+              <option>Por proyecto</option><option>Independiente</option>
+            </select>
+          </div>
+          <div class="campo"><label for="oHorario">Horario</label><input type="text" id="oHorario" placeholder="8:00 AM - 5:00 PM"></div>
+          <button class="btn" type="submit">Crear</button>
+        </form>
+        <div id="respuestaOferta" class="estado"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Gestionar oferta existente</h2>
+        <div class="filtros">
+          <div class="campo"><label for="gId">ID oferta</label><input type="number" id="gId" min="1" value="1"></div>
+          <button class="btn btn-suave" id="btnCargarOferta">Cargar <small>GET</small></button>
+        </div>
+        <form id="formGestion" class="formulario">
+          <div class="campo"><label for="gTitulo">Título</label><input type="text" id="gTitulo"></div>
+          <div class="campo"><label for="gDescripcion">Descripción</label><textarea id="gDescripcion"></textarea></div>
+          <div class="campo"><label for="gUbicacion">Ubicación</label><input type="text" id="gUbicacion"></div>
+          <div class="campo"><label for="gSalario">Salario</label><input type="number" id="gSalario" min="0" step="0.01"></div>
+          <div class="campo"><label for="gTipoContrato">Tipo de contrato</label><input type="text" id="gTipoContrato"></div>
+          <div class="acciones">
+            <button class="btn" type="submit">Guardar cambios <small>PUT</small></button>
+            <button class="btn btn-suave" type="button" id="btnPausar">Pausar <small>PATCH</small></button>
+            <button class="btn btn-suave" type="button" id="btnActivar">Activar <small>PATCH</small></button>
+            <button class="btn btn-suave" type="button" id="btnCerrar">Cerrar <small>PATCH</small></button>
+            <button class="btn btn-peligro" type="button" id="btnEliminar">Eliminar <small>DELETE</small></button>
+          </div>
+        </form>
+        <div id="respuestaGestion" class="estado"></div>
+      </div>
+    </section>
+
+    <!-- ===================== PERFILES Y ADMIN ===================== -->
+    <section class="vista" id="vista-perfiles">
+      <div class="panel">
+        <h2>Perfil de candidato <small>GET · PUT /api/perfiles/candidato</small> <span class="requisito">Sesión USUARIO</span></h2>
+        <div class="filtros">
+          <button class="btn btn-suave" id="btnPerfilCargar">Cargar perfil <small>GET</small></button>
+        </div>
+        <form id="formPerfilC" class="formulario">
+          <div class="campo"><label for="pcNombre">Nombre</label><input type="text" id="pcNombre"></div>
+          <div class="campo"><label for="pcEmail">Email</label><input type="email" id="pcEmail"></div>
+          <div class="campo"><label for="pcTelefono">Teléfono</label><input type="text" id="pcTelefono"></div>
+          <div class="campo"><label for="pcDireccion">Dirección</label><input type="text" id="pcDireccion"></div>
+          <div class="campo"><label for="pcMunicipio">Municipio</label><input type="text" id="pcMunicipio"></div>
+          <div class="campo"><label for="pcDepartamento">Departamento</label><input type="text" id="pcDepartamento"></div>
+          <button class="btn" type="submit">Guardar <small>PUT</small></button>
+        </form>
+        <div id="estadoPerfilC" class="estado"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Currículums <small>GET /api/perfiles/candidato/curriculums · POST (multipart)</small></h2>
+        <div class="filtros">
+          <button class="btn btn-suave" id="btnCvListar">Listar CV <small>GET</small></button>
+          <div class="campo">
+            <label for="cvArchivo">Archivo PDF</label>
+            <input type="file" id="cvArchivo" accept=".pdf">
+          </div>
+          <label class="check"><input type="checkbox" id="cvPrincipal" checked> Principal</label>
+          <button class="btn" id="btnCvSubir">Subir CV <small>POST</small></button>
+        </div>
+        <div id="estadoCv" class="estado"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Perfil de empresa <small>GET · PUT /api/perfiles/empresa</small> <span class="requisito">Sesión EMPRESA</span></h2>
+        <div class="filtros">
+          <button class="btn btn-suave" id="btnPerfilECargar">Cargar perfil <small>GET</small></button>
+        </div>
+        <form id="formPerfilE" class="formulario">
+          <div class="campo"><label for="peResponsable">Nombre responsable</label><input type="text" id="peResponsable"></div>
+          <div class="campo"><label for="peEmail">Email</label><input type="email" id="peEmail"></div>
+          <div class="campo"><label for="peNombreEmpresa">Nombre empresa</label><input type="text" id="peNombreEmpresa"></div>
+          <div class="campo"><label for="peNit">NIT</label><input type="text" id="peNit"></div>
+          <div class="campo"><label for="peTelefono">Teléfono empresa</label><input type="text" id="peTelefono"></div>
+          <div class="campo"><label for="peDireccion">Dirección</label><input type="text" id="peDireccion"></div>
+          <div class="campo"><label for="peMunicipio">Municipio</label><input type="text" id="peMunicipio"></div>
+          <div class="campo"><label for="peDepartamento">Departamento</label><input type="text" id="peDepartamento"></div>
+          <div class="campo"><label for="peSector">Sector</label><input type="text" id="peSector"></div>
+          <div class="campo"><label for="peSitioWeb">Sitio web</label><input type="text" id="peSitioWeb"></div>
+          <div class="campo" style="grid-column:1/-1"><label for="peDescripcion">Descripción</label><textarea id="peDescripcion"></textarea></div>
+          <button class="btn" type="submit">Guardar <small>PUT</small></button>
+        </form>
+        <div id="estadoPerfilE" class="estado"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Administración <small>GET /api/admin/dashboard · GET /api/admin/auditoria</small> <span class="requisito">Sesión ADMINISTRADOR</span></h2>
+        <div class="filtros">
+          <button class="btn btn-suave" id="btnDashboard">Dashboard</button>
+          <div class="campo">
+            <label for="audLimite">Auditoría (límite 1-100)</label>
+            <input type="number" id="audLimite" min="1" max="100" value="10">
+          </div>
+          <button class="btn btn-suave" id="btnAuditoria">Ver auditoría</button>
+        </div>
+        <div id="estadoAdmin" class="estado"></div>
+      </div>
+    </section>
+
+    <!-- ===================== CONSOLA ===================== -->
+    <section class="vista" id="vista-consola">
+      <div class="panel">
+        <h2>Consola de peticiones <small>historial de llamadas HTTP</small></h2>
+        <div id="logPeticiones" class="log"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toasts" class="toasts"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

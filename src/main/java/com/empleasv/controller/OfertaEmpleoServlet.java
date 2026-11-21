@@ -4,9 +4,13 @@ import com.empleasv.dao.OfertaEmpleoDAO;
 import com.empleasv.model.OfertaEmpleo;
 import com.empleasv.dao.EmpresaDAO;
 import com.empleasv.dao.PerfilEmpresaDAO;
+import com.empleasv.model.Archivo;
 import com.empleasv.model.Empresa;
+import com.empleasv.model.PerfilCandidato;
 import com.empleasv.model.Usuario;
 import com.empleasv.model.UsuarioRol;
+import com.empleasv.service.PerfilService;
+import com.empleasv.service.PostulacionService;
 import com.empleasv.util.SesionUtil;
 
 import jakarta.servlet.ServletException;
@@ -31,12 +35,16 @@ public class OfertaEmpleoServlet extends HttpServlet {
     private OfertaEmpleoDAO ofertaDAO;
     private EmpresaDAO empresaDAO;
     private PerfilEmpresaDAO perfilEmpresaDAO;
+    private PerfilService perfilService;
+    private PostulacionService postulacionService;
 
     @Override
     public void init() throws ServletException {
         ofertaDAO = new OfertaEmpleoDAO();
         empresaDAO = new EmpresaDAO();
         perfilEmpresaDAO = new PerfilEmpresaDAO();
+        perfilService = new PerfilService(getServletContext());
+        postulacionService = new PostulacionService(getServletContext());
     }
 
     // ==================== Autorización y propiedad ====================
@@ -374,6 +382,25 @@ public class OfertaEmpleoServlet extends HttpServlet {
         }
 
         request.setAttribute("oferta", oferta);
+
+        Usuario usuario = SesionUtil.usuario(request);
+        List<Archivo> curriculums = List.of();
+        Integer curriculumPrincipalId = null;
+        boolean yaPostulado = false;
+
+        if (usuario != null && usuario.getRol() == UsuarioRol.USUARIO) {
+            curriculums = perfilService.listarCurriculums(usuario.getId());
+            PerfilCandidato perfil = perfilService.obtenerOCrearCandidato(usuario.getId());
+            if (perfil != null && perfil.getCurriculum() != null) {
+                curriculumPrincipalId = perfil.getCurriculum().getId();
+            }
+            yaPostulado = postulacionService.yaPostulado(id, usuario.getId());
+        }
+
+        request.setAttribute("curriculums", curriculums);
+        request.setAttribute("curriculumPrincipalId", curriculumPrincipalId);
+        request.setAttribute("yaPostulado", yaPostulado);
+        request.setAttribute("postularSolicitado", "1".equals(request.getParameter("postular")));
         request.getRequestDispatcher("/WEB-INF/views/detalle.jsp").forward(request, response);
     }
 

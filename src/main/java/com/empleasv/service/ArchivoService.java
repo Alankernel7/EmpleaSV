@@ -72,6 +72,19 @@ public class ArchivoService {
     }
 
     /**
+     * Guarda un curriculum en PDF. Solo se aceptan archivos .pdf cuyo
+     * contenido tenga la firma binaria de un PDF.
+     *
+     * @param propietario usuario dueño del curriculum
+     * @param parte       contenido subido
+     * @return archivo persistido
+     */
+    public Archivo guardarPdf(Usuario propietario, Part parte)
+            throws ArchivoNoValidoException, IOException {
+        return guardar(propietario, Archivo.CategoriaArchivo.CURRICULUM, parte);
+    }
+
+    /**
      * Persiste un archivo ya escrito en disco dentro de la transacción activa.
      * Utilizado por el registro donde usuario y archivo se crean juntos.
      *
@@ -108,6 +121,16 @@ public class ArchivoService {
 
         archivoRepository.guardar(em, archivo);
         return archivo;
+    }
+
+    /**
+     * Guarda un curriculum PDF dentro de una transacción ya abierta.
+     * Utilizado cuando el archivo y otra entidad se crean juntos.
+     */
+    public Archivo guardarPdf(jakarta.persistence.EntityManager em, Usuario propietario,
+                              Part parte)
+            throws ArchivoNoValidoException, IOException {
+        return guardar(em, propietario, Archivo.CategoriaArchivo.CURRICULUM, parte);
     }
 
     /** Devuelve la ruta absoluta de un archivo almacenado. */

@@ -26,6 +26,8 @@
 <c:set var="esNuevaOferta" value="${rutaActual == '/ofertas' && fn:contains(qsActual, 'accion=registrar')}" />
 <c:set var="esPanelEmpresa" value="${rutaActual == '/panel-empresa'}" />
 <c:set var="esPerfilEmpresa" value="${rutaActual == '/perfil-empresa'}" />
+<c:set var="esPostulaciones" value="${rutaActual == '/postulaciones' && not fn:contains(qsActual, 'accion=recibidas')}" />
+<c:set var="esPostulacionesRecibidas" value="${rutaActual == '/postulaciones' && fn:contains(qsActual, 'accion=recibidas')}" />
 
 <c:set var="esAdminDashboard" value="${rutaActual == '/admin'}" />
 <c:set var="esAdminUsuarios" value="${rutaActual == '/admin' && fn:contains(qsActual, 'seccion=usuarios')}" />
@@ -95,10 +97,14 @@
                     <c:if test="${esCandidato}">
                         <a class="nav-link nav-link-tarea${esCurriculum ? ' active' : ''}" href="${ctx}/perfil?accion=curriculum"
                            ${esCurriculum ? 'aria-current="page"' : ''}>Mi curriculum</a>
+                        <a class="nav-link nav-link-tarea${esPostulaciones ? ' active' : ''}" href="${ctx}/postulaciones?accion=mis"
+                           ${esPostulaciones ? 'aria-current="page"' : ''}>Mis postulaciones</a>
                     </c:if>
                     <c:if test="${esEmpresaRol}">
                         <a class="nav-link nav-link-tarea${esMisOfertas ? ' active' : ''}" href="${ctx}/ofertas?format=jsp&mias=1"
                            ${esMisOfertas ? 'aria-current="page"' : ''}>Mis ofertas</a>
+                        <a class="nav-link nav-link-tarea${esPostulacionesRecibidas ? ' active' : ''}" href="${ctx}/postulaciones?accion=recibidas"
+                           ${esPostulacionesRecibidas ? 'aria-current="page"' : ''}>Postulaciones</a>
                         <a class="nav-link nav-link-tarea${esNuevaOferta ? ' active' : ''}" href="${ctx}/ofertas?format=jsp&accion=registrar"
                            ${esNuevaOferta ? 'aria-current="page"' : ''}>Nueva oferta</a>
                     </c:if>
@@ -156,7 +162,8 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                         Mi curriculum
                                     </a>
-                                    <a class="nav-menu-link" href="${ctx}/mis-postulaciones.jsp">
+                                    <a class="nav-menu-link${esPostulaciones ? ' active' : ''}" href="${ctx}/postulaciones?accion=mis"
+                                       ${esPostulaciones ? 'aria-current="page"' : ''}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                         Mis postulaciones
                                     </a>
@@ -175,6 +182,11 @@
                                        ${esPerfilEmpresa ? 'aria-current="page"' : ''}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                                         Perfil empresa
+                                    </a>
+                                    <a class="nav-menu-link${esPostulacionesRecibidas ? ' active' : ''}" href="${ctx}/postulaciones?accion=recibidas"
+                                       ${esPostulacionesRecibidas ? 'aria-current="page"' : ''}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                        Postulaciones recibidas
                                     </a>
                                 </c:if>
                             </div>

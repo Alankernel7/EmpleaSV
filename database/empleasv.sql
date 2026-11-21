@@ -2,7 +2,7 @@
 -- EmpleaSV - Script único de instalación
 -- ============================================================
 -- Este archivo crea la base de datos completa de EmpleaSV
--- desde cero: las siete tablas, relaciones, índices y datos
+-- desde cero: las ocho tablas, relaciones, índices y datos
 -- de prueba de empresas y ofertas.
 --
 -- Convención de claves (aplicable a todo el proyecto):
@@ -123,6 +123,44 @@ CREATE TABLE IF NOT EXISTS archivo (
 
 CREATE INDEX idx_archivo_usuario_categoria ON archivo(usuario_id, categoria);
 CREATE INDEX idx_archivo_categoria ON archivo(categoria);
+
+-- ------------------------------------------------------------
+-- Tabla: postulacion
+-- Postulación de un candidato a una oferta. Guarda el CV exacto
+-- enviado (curriculum_id), aunque el perfil cambie después.
+-- Un candidato solo puede postularse una vez por oferta.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS postulacion (
+    id                      INT             AUTO_INCREMENT PRIMARY KEY,
+    oferta_id               INT             NOT NULL,
+    usuario_id              INT             NOT NULL,
+    curriculum_id           INT             NOT NULL,
+    mensaje_presentacion    TEXT            NULL,
+    estado                  VARCHAR(30)     NOT NULL DEFAULT 'PENDIENTE',
+    fecha_postulacion       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_postulacion_oferta_usuario
+        UNIQUE (oferta_id, usuario_id),
+    CONSTRAINT fk_postulacion_oferta
+        FOREIGN KEY (oferta_id)
+        REFERENCES oferta_empleo(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_postulacion_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuario(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_postulacion_curriculum
+        FOREIGN KEY (curriculum_id)
+        REFERENCES archivo(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_postulacion_usuario ON postulacion(usuario_id);
+CREATE INDEX idx_postulacion_oferta ON postulacion(oferta_id);
+CREATE INDEX idx_postulacion_curriculum ON postulacion(curriculum_id);
+CREATE INDEX idx_postulacion_estado ON postulacion(estado);
 
 -- ------------------------------------------------------------
 -- Tabla: perfil_candidato

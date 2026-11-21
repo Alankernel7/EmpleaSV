@@ -1625,6 +1625,25 @@ select.form-control {
     color: var(--gray-500);
 }
 
+.cv-opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cv-opcion {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+    cursor: pointer;
+}
+
+.cv-opcion input[type="radio"] {
+    accent-color: var(--primary);
+}
+
 /* ============================================
    INFO CARDS
    ============================================ */

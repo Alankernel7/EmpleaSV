@@ -125,7 +125,7 @@
                     <label class="form-label" for="curriculum">Selecciona el archivo</label>
                     <div class="file-input" id="curriculum-file-input">
                         <input type="file" id="curriculum" name="curriculum" class="file-input-native" required
-                               accept=".pdf,.doc,.docx,.odt,.txt,application/pdf">
+                               accept=".pdf,application/pdf">
                         <label for="curriculum" class="file-input-btn">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 10-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486"/></svg>
                             Seleccionar archivo
@@ -145,7 +145,7 @@
                             });
                         })();
                     </script>
-                    <span class="form-hint">Formatos admitidos: PDF, DOC, DOCX, ODT y TXT. Tamano maximo 5 MB. El archivo se agrega a tu lista y no reemplaza los demas.</span>
+                    <span class="form-hint">Formato admitido: PDF. Tamano maximo 5 MB. El archivo se agrega a tu lista y no reemplaza los demas.</span>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary btn-lg">Subir curriculum</button>

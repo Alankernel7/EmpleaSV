@@ -9,6 +9,7 @@ import com.empleasv.model.Usuario;
 import com.empleasv.repository.ArchivoRepository;
 import com.empleasv.repository.PerfilCandidatoRepository;
 import com.empleasv.repository.PerfilEmpresaRepository;
+import com.empleasv.repository.PostulacionRepository;
 import com.empleasv.util.ArchivoNoValidoException;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletContext;
@@ -29,6 +30,7 @@ public class PerfilService {
     private final PerfilCandidatoRepository perfilCandidatoRepository = new PerfilCandidatoRepository();
     private final PerfilEmpresaRepository perfilEmpresaRepository = new PerfilEmpresaRepository();
     private final ArchivoRepository archivoRepository = new ArchivoRepository();
+    private final PostulacionRepository postulacionRepository = new PostulacionRepository();
     private final ArchivoService archivoService;
 
     public PerfilService(ServletContext context) {
@@ -341,6 +343,10 @@ public class PerfilService {
             throws RegistroException {
         if (archivoId == null || !archivoRepository.esCurriculumPropio(archivoId, usuarioId)) {
             throw new RegistroException("El curriculum seleccionado no existe o no te pertenece.");
+        }
+        if (postulacionRepository.archivoEnUso(archivoId)) {
+            throw new RegistroException(
+                    "Este curriculum ya fue enviado en una postulacion y no puede eliminarse.");
         }
 
         EntityManager em = JpaConfig.createEntityManager();

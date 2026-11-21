@@ -26,6 +26,7 @@ import java.util.Set;
  *
  * Reglas:
  *  - /archivo            -> sesión activa
+  - /postulaciones       -> sesión activa (rol según la acción)
   - /mis-postulaciones   -> rol USUARIO
   - /ofertas-guardadas   -> rol USUARIO
  *  - /perfil             -> rol USUARIO
@@ -46,6 +47,7 @@ import java.util.Set;
         "/panel-empresa",
         "/panel-empresa/*",
         "/ofertas",
+        "/postulaciones",
         "/mis-postulaciones.jsp",
         "/ofertas-guardadas.jsp",
         "/admin",
@@ -129,6 +131,7 @@ public class AuthFilter implements Filter {
     private boolean esRutaPrivada(String ruta) {
         return esPerfilEmpresa(ruta) || esPanelEmpresa(ruta)
                 || esPerfilCandidato(ruta) || ruta.startsWith("/archivo")
+                || ruta.equals("/postulaciones")
                 || ruta.equals("/mis-postulaciones.jsp")
                 || ruta.equals("/ofertas-guardadas.jsp");
     }

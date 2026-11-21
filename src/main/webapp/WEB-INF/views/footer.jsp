@@ -20,7 +20,7 @@
                     <div class="footer-title">Candidatos</div>
                     <ul class="footer-links">
                         <li><a href="${pageContext.request.contextPath}/perfil">Mi perfil</a></li>
-                        <li><a href="${pageContext.request.contextPath}/mis-postulaciones.jsp">Mis postulaciones</a></li>
+                        <li><a href="${pageContext.request.contextPath}/postulaciones?accion=mis">Mis postulaciones</a></li>
                         <li><a href="${pageContext.request.contextPath}/ofertas-guardadas.jsp">Ofertas guardadas</a></li>
                     </ul>
                 </div>

@@ -29,10 +29,12 @@
             <li>Utiliza el buscador para filtrar por titulo o palabra clave.</li>
             <li>Filtra por ubicacion si buscas algo especifico.</li>
             <li>Haz clic en una oferta para ver los detalles completos.</li>
-            <li>Completa tu <a href="${pageContext.request.contextPath}/perfil">perfil de candidato</a> y sube tu curriculum para que las empresas puedan conocerte.</li>
+            <li>Completa tu <a href="${pageContext.request.contextPath}/perfil">perfil de candidato</a> y sube tu curriculum en PDF.</li>
+            <li>En el detalle de la oferta, pulsa "Postularme", elige tu CV y confirma.</li>
         </ol>
         <p style="color:var(--gray-500); font-size:0.85rem; margin-top:0.75rem;">
-            La funcion de postulacion todavia no esta disponible en la plataforma.
+            El curriculum debe ser un archivo PDF de maximo 5 MB. Puedes usar un CV de tu perfil
+            o adjuntar uno nuevo; la empresa vera el documento exacto que enviaste.
         </p>
     </div>
 
@@ -75,13 +77,14 @@
 
     <div class="faq-item">
         <div class="faq-question">
-            Cuando estara disponible postularme a las ofertas?
+            Como me postulo a una oferta?
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </div>
         <div class="faq-answer">
-            Todavia no esta implementada la funcion de postulaciones ni la de guardar ofertas.
-            Estas secciones existen en el menu, pero no registran informacion porque el modulo
-            correspondiente no se ha desarrollado.
+            Inicia sesion como candidato, abre el detalle de una oferta activa y pulsa "Postularme".
+            Debes elegir un CV de tu perfil o subir un PDF nuevo (maximo 5 MB). Solo puedes
+            postularte una vez a cada oferta. Revisa el estado en
+            <a href="${pageContext.request.contextPath}/postulaciones?accion=mis">Mis postulaciones</a>.
         </div>
     </div>
 

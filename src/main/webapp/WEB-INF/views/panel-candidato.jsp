@@ -102,10 +102,10 @@
 
     <div class="aviso aviso-info">
         <div>
-            <strong>Postulaciones y ofertas guardadas</strong>
-            Estas funciones todavia no estan disponibles: no se han registrado postulaciones ni ofertas
-            guardadas en la plataforma.
+            <strong>Postulaciones</strong>
+            Consulta el estado de las ofertas a las que te has postulado y el CV que enviaste.
         </div>
+        <a href="${ctx}/postulaciones?accion=mis" class="btn btn-primary btn-sm" style="margin-left:auto;">Ver mis postulaciones</a>
     </div>
 
     <c:if test="${not empty ofertasDestacadas}">

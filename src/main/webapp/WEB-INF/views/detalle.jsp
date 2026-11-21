@@ -6,6 +6,8 @@
     <jsp:param name="tituloPagina" value="Detalle de Oferta"/>
 </jsp:include>
 
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+
 <div class="container section-sm">
     <c:if test="${not empty mensajeExito}">
         <div class="alert alert-success"><c:out value="${mensajeExito}"/></div>
@@ -112,10 +114,39 @@
                 </div>
 
                 <div class="detail-actions">
-                    <a href="#" class="btn btn-primary btn-lg" onclick="alert('La funcion de postulacion estara disponible proximamente.'); return false;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        Postularme
-                    </a>
+                    <c:choose>
+                        <c:when test="${empty usuarioLogueado}">
+                            <a href="${ctx}/auth?accion=login&restringido=1" class="btn btn-primary btn-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                Inicia sesion para postularte
+                            </a>
+                        </c:when>
+                        <c:when test="${rolUsuario == 'USUARIO'}">
+                            <c:choose>
+                                <c:when test="${yaPostulado}">
+                                    <span class="badge badge-success" style="padding:0.65rem 1rem; font-size:0.9rem;">
+                                        Ya te postulaste a esta oferta
+                                    </span>
+                                </c:when>
+                                <c:when test="${oferta.estado != 'ACTIVA'}">
+                                    <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                        Oferta no disponible
+                                    </button>
+                                </c:when>
+                                <c:otherwise>
+                                    <button type="button" class="btn btn-primary btn-lg" onclick="abrirModalPostulacion()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        Postularme
+                                    </button>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:when>
+                        <c:otherwise>
+                            <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                Solo los candidatos pueden postularse
+                            </button>
+                        </c:otherwise>
+                    </c:choose>
                     <c:set var="esPropia"
                            value="${rolUsuario == 'ADMINISTRADOR' || (rolUsuario == 'EMPRESA' && not empty empresaIdSesion && empresaIdSesion == oferta.empresaId)}" />
                     <c:if test="${esPropia}">
@@ -131,5 +162,138 @@
         </c:otherwise>
     </c:choose>
 </div>
+
+<c:if test="${rolUsuario == 'USUARIO' && !yaPostulado && oferta.estado == 'ACTIVA'}">
+    <div class="modal-overlay" id="modalPostulacion" onclick="cerrarModalPostulacion(event)">
+        <div class="modal" onclick="event.stopPropagation();">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <h2>Postularme</h2>
+                    <p class="text-muted" style="font-size:0.85rem; margin-top:0.25rem;">
+                        <c:out value="${oferta.titulo}"/>
+                        <c:if test="${not empty oferta.empresa}"> &middot; <c:out value="${oferta.empresa.nombre}"/></c:if>
+                    </p>
+                </div>
+                <button type="button" class="modal-close" onclick="cerrarModalPostulacion()" aria-label="Cerrar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formPostulacion" action="${ctx}/postulaciones" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="accion" value="crear"/>
+                    <input type="hidden" name="oferta_id" value="${oferta.id}"/>
+
+                    <c:choose>
+                        <c:when test="${not empty curriculums}">
+                            <div class="cv-opciones">
+                                <label class="cv-opcion">
+                                    <input type="radio" name="cv_modo" value="existente" checked
+                                           onchange="alternarCv(this.value)"/>
+                                    <span>Usar un CV de mi perfil</span>
+                                </label>
+                                <select name="curriculum_id" id="cvSelect" class="form-control" required>
+                                    <c:forEach var="cv" items="${curriculums}">
+                                        <option value="${cv.id}" ${cv.id == curriculumPrincipalId ? 'selected' : ''}>
+                                            <c:out value="${cv.nombreOriginal}"/>
+                                        </option>
+                                    </c:forEach>
+                                </select>
+
+                                <label class="cv-opcion" style="margin-top:1rem;">
+                                    <input type="radio" name="cv_modo" value="nuevo"
+                                           onchange="alternarCv(this.value)"/>
+                                    <span>Subir otro CV (solo PDF)</span>
+                                </label>
+                                <input type="file" name="curriculum" id="cvArchivo" class="file-input"
+                                       accept=".pdf,application/pdf" disabled/>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="aviso aviso-info" style="margin-bottom:1rem;">
+                                <div>
+                                    <strong>No tienes un CV en tu perfil</strong>
+                                    Adjunta tu curriculum en PDF para completar la postulacion.
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="cvArchivo">Curriculum (PDF)</label>
+                                <input type="file" name="curriculum" id="cvArchivo" class="file-input"
+                                       accept=".pdf,application/pdf" required/>
+                                <p class="form-hint">Solo PDF, maximo 5 MB.</p>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <div class="form-group" style="margin-top:1rem;">
+                        <label class="form-label" for="mensajePostulacion">Mensaje de presentacion (opcional)</label>
+                        <textarea class="form-control" id="mensajePostulacion" name="mensaje" rows="4"
+                                  maxlength="2000"
+                                  placeholder="Cuentale a la empresa por que te interesa esta oportunidad."></textarea>
+                        <p class="form-hint">Maximo 2000 caracteres.</p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="cerrarModalPostulacion()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Confirmar postulacion</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalPostulacion() {
+            var overlay = document.getElementById('modalPostulacion');
+            if (!overlay) { return; }
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarModalPostulacion(e) {
+            if (e && e.target !== e.currentTarget) { return; }
+            var overlay = document.getElementById('modalPostulacion');
+            if (!overlay) { return; }
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function alternarCv(origen) {
+            var select = document.getElementById('cvSelect');
+            var archivo = document.getElementById('cvArchivo');
+            if (!select || !archivo) { return; }
+            var existente = origen === 'existente';
+            select.disabled = !existente;
+            select.required = existente;
+            archivo.disabled = existente;
+            archivo.required = !existente;
+            if (existente) {
+                archivo.value = '';
+            }
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { cerrarModalPostulacion(); }
+        });
+
+        (function () {
+            var form = document.getElementById('formPostulacion');
+            if (!form) { return; }
+            form.addEventListener('submit', function (e) {
+                var select = document.getElementById('cvSelect');
+                var archivo = document.getElementById('cvArchivo');
+                var usaExistente = select && !select.disabled && select.value;
+                var subeNuevo = archivo && !archivo.disabled && archivo.files.length > 0;
+                if (!usaExistente && !subeNuevo) {
+                    e.preventDefault();
+                    alert('Selecciona un CV de tu perfil o adjunta un PDF.');
+                }
+            });
+        })();
+
+        <c:if test="${postularSolicitado}">
+        abrirModalPostulacion();
+        </c:if>
+    </script>
+</c:if>
 
 <%@ include file="footer.jsp" %>

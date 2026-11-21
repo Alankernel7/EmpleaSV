@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -50,16 +49,11 @@ public final class ArchivosUtil {
     static {
         EXTENSIONES.put("FOTO_PERFIL", Set.of("jpg", "jpeg", "png", "webp"));
         EXTENSIONES.put("LOGO_EMPRESA", Set.of("jpg", "jpeg", "png", "webp"));
-        EXTENSIONES.put("CURRICULUM", Set.of("pdf", "doc", "docx", "odt", "txt"));
+        EXTENSIONES.put("CURRICULUM", Set.of("pdf"));
 
         MIME.put("FOTO_PERFIL", Set.of("image/jpeg", "image/png", "image/webp"));
         MIME.put("LOGO_EMPRESA", Set.of("image/jpeg", "image/png", "image/webp"));
-        MIME.put("CURRICULUM", Set.of(
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "application/vnd.oasis.opendocument.text",
-                "text/plain"));
+        MIME.put("CURRICULUM", Set.of("application/pdf"));
 
         LIMITES.put("FOTO_PERFIL", LIMITE_IMAGEN_BYTES);
         LIMITES.put("LOGO_EMPRESA", LIMITE_IMAGEN_BYTES);
@@ -153,9 +147,11 @@ public final class ArchivosUtil {
                             + String.join(", ", extensionesPermitidas) + ".");
         }
 
-        String mime = parte.getContentType() != null
+        String mimeDeclarado = parte.getContentType() != null
                 ? parte.getContentType().toLowerCase(Locale.ROOT).trim() : "";
-        if (mime.isEmpty() || !mimesPermitidos.contains(mime)) {
+        boolean esCurriculum = categoria == Archivo.CategoriaArchivo.CURRICULUM;
+        if (!esCurriculum
+                && (mimeDeclarado.isEmpty() || !mimesPermitidos.contains(mimeDeclarado))) {
             throw new ArchivoNoValidoException(
                     "El tipo de contenido del archivo no es valido para esta operacion.");
         }
@@ -172,7 +168,9 @@ public final class ArchivosUtil {
 
         byte[] cabecera;
         try (InputStream in = parte.getInputStream()) {
-            cabecera = in.readNBytes(16);
+            // La firma PDF puede aparecer dentro de los primeros 1024 bytes.
+            // Para las imagenes basta leer su cabecera habitual.
+            cabecera = in.readNBytes(esCurriculum ? 1024 : 16);
         } catch (IOException e) {
             throw new ArchivoNoValidoException("No se pudo leer el archivo.", e);
         }
@@ -182,6 +180,10 @@ public final class ArchivosUtil {
                     "El contenido del archivo no coincide con su extension.");
         }
 
+        // El Content-Type multipart lo controla el cliente. Para los CV se
+        // usa el contenido inspeccionado y se persiste siempre el MIME real.
+        String mime = esCurriculum ? "application/pdf" : mimeDeclarado;
+
         Metadata metadata = new Metadata();
         metadata.nombreOriginal = nombreOriginal;
         metadata.extension = extension;
@@ -189,6 +191,17 @@ public final class ArchivosUtil {
         metadata.tamanoBytes = tamano;
         metadata.cabecera = cabecera;
         return metadata;
+    }
+
+    /**
+     * Valida una parte multipart como curriculum en formato PDF.
+     *
+     * @param parte parte multipart recibida
+     * @return metadatos normalizados del PDF
+     * @throws ArchivoNoValidoException si no es un PDF valido
+     */
+    public static Metadata validarPdf(Part parte) throws ArchivoNoValidoException {
+        return validar(parte, Archivo.CategoriaArchivo.CURRICULUM);
     }
 
     /**
@@ -227,8 +240,7 @@ public final class ArchivosUtil {
                         && cabecera[8] == 'W' && cabecera[9] == 'E'
                         && cabecera[10] == 'B' && cabecera[11] == 'P';
             case "pdf":
-                return cabecera[0] == '%' && cabecera[1] == 'P'
-                        && cabecera[2] == 'D' && cabecera[3] == 'F';
+                return tieneFirmaPdf(cabecera);
             case "doc":
                 return (cabecera[0] & 0xFF) == 0xD0 && (cabecera[1] & 0xFF) == 0xCF
                         && (cabecera[2] & 0xFF) == 0x11 && (cabecera[3] & 0xFF) == 0xE0;
@@ -240,6 +252,21 @@ public final class ArchivosUtil {
             default:
                 return false;
         }
+    }
+
+    /** Busca la firma PDF dentro del límite permitido por el formato. */
+    private static boolean tieneFirmaPdf(byte[] cabecera) {
+        if (cabecera == null || cabecera.length < 5) {
+            return false;
+        }
+        for (int i = 0; i <= cabecera.length - 5; i++) {
+            if (cabecera[i] == '%' && cabecera[i + 1] == 'P'
+                    && cabecera[i + 2] == 'D' && cabecera[i + 3] == 'F'
+                    && cabecera[i + 4] == '-') {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean contieneNulo(byte[] datos) {
@@ -323,7 +350,10 @@ public final class ArchivosUtil {
             Files.createDirectories(padre);
         }
         try (InputStream in = parte.getInputStream()) {
-            Files.copy(in, destino, StandardCopyOption.REPLACE_EXISTING);
+            // Nunca reemplazar un archivo existente; el nombre aleatorio ya
+            // reduce colisiones y este modo evita sobrescrituras incluso si
+            // una colisión llegara a ocurrir.
+            Files.copy(in, destino);
         }
     }
 

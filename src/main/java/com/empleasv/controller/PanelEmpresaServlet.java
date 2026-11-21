@@ -3,8 +3,10 @@ package com.empleasv.controller;
 import com.empleasv.dao.OfertaEmpleoDAO;
 import com.empleasv.model.OfertaEmpleo;
 import com.empleasv.model.PerfilEmpresa;
+import com.empleasv.model.Postulacion;
 import com.empleasv.model.Usuario;
 import com.empleasv.service.PerfilService;
+import com.empleasv.service.PostulacionService;
 import com.empleasv.util.SesionUtil;
 
 import jakarta.servlet.ServletException;
@@ -30,11 +32,13 @@ public class PanelEmpresaServlet extends HttpServlet {
 
     private OfertaEmpleoDAO ofertaDAO;
     private PerfilService perfilService;
+    private PostulacionService postulacionService;
 
     @Override
     public void init() throws ServletException {
         ofertaDAO = new OfertaEmpleoDAO();
         perfilService = new PerfilService(getServletContext());
+        postulacionService = new PostulacionService(getServletContext());
     }
 
     @Override
@@ -89,11 +93,21 @@ public class PanelEmpresaServlet extends HttpServlet {
 
         request.setAttribute("perfilEmpresa", perfil);
         request.setAttribute("empresaId", empresaId);
+        List<Postulacion> postulaciones = postulacionService.listarRecibidas(empresaId);
+        long postulacionesPendientes = postulaciones.stream()
+                .filter(p -> p.getEstado() == Postulacion.EstadoPostulacion.PENDIENTE)
+                .count();
+        List<Postulacion> postulacionesRecientes = postulaciones.size() > 5
+                ? postulaciones.subList(0, 5) : postulaciones;
+
         request.setAttribute("ofertas", ofertas);
         request.setAttribute("totalOfertas", ofertas.size());
         request.setAttribute("ofertasActivas", activas);
         request.setAttribute("ofertasPausadas", pausadas);
         request.setAttribute("ofertasCerradas", cerradas);
+        request.setAttribute("postulacionesRecientes", postulacionesRecientes);
+        request.setAttribute("totalPostulaciones", postulaciones.size());
+        request.setAttribute("postulacionesPendientes", postulacionesPendientes);
 
         request.getRequestDispatcher("/WEB-INF/views/panel-empresa.jsp")
                 .forward(request, response);

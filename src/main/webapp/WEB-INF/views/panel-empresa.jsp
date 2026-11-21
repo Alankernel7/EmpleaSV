@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <jsp:include page="header.jsp">
     <jsp:param name="tituloPagina" value="Panel empresa"/>
@@ -54,7 +55,62 @@
             <div class="stat-card-value">${ofertasCerradas}</div>
             <div class="stat-card-change">Finalizadas</div>
         </div>
+        <div class="stat-card">
+            <div class="stat-card-label">Postulaciones</div>
+            <div class="stat-card-value">${totalPostulaciones}</div>
+            <div class="stat-card-change">${postulacionesPendientes} pendiente(s)</div>
+        </div>
     </div>
+
+    <div class="section-header">
+        <h2>Postulaciones recibidas</h2>
+        <a href="${ctx}/postulaciones?accion=recibidas" class="btn btn-ghost btn-sm">Ver todas</a>
+    </div>
+
+    <c:choose>
+        <c:when test="${empty postulacionesRecientes}">
+            <div class="aviso aviso-info mb-3">
+                <div>
+                    <strong>Aun no hay postulaciones</strong>
+                    Cuando un candidato se postule a una de tus ofertas, aparecera aqui con su CV.
+                </div>
+            </div>
+        </c:when>
+        <c:otherwise>
+            <c:forEach var="p" items="${postulacionesRecientes}">
+                <c:set var="claseEstado"
+                       value="${p.estado == 'ACEPTADA' ? 'badge-success' : (p.estado == 'RECHAZADA' ? 'badge-danger' : (p.estado == 'REVISADA' ? 'badge-info' : 'badge-warning'))}" />
+                <div class="postulacion-card">
+                    <div class="postulacion-info">
+                        <h4>
+                            <a href="${ctx}/postulaciones?accion=detalle&id=${p.id}">
+                                <c:out value="${p.candidato.nombre}"/>
+                            </a>
+                        </h4>
+                        <p>
+                            Oferta: <c:out value="${p.oferta.titulo}"/> &middot;
+                            ${fn:substring(p.fechaPostulacion, 0, 10)}
+                        </p>
+                        <p>
+                            CV:
+                            <c:choose>
+                                <c:when test="${not empty p.curriculum}"><c:out value="${p.curriculum.nombreOriginal}"/></c:when>
+                                <c:otherwise>No adjunto</c:otherwise>
+                            </c:choose>
+                        </p>
+                    </div>
+                    <div class="fila-acciones">
+                        <span class="badge ${claseEstado}"><c:out value="${p.estado}"/></span>
+                        <c:if test="${not empty p.curriculum}">
+                            <a href="${ctx}/postulaciones?accion=cv&id=${p.id}&inline=1" target="_blank"
+                               rel="noopener" class="btn btn-outline btn-sm">Ver CV</a>
+                        </c:if>
+                        <a href="${ctx}/postulaciones?accion=detalle&id=${p.id}" class="btn btn-secondary btn-sm">Detalle</a>
+                    </div>
+                </div>
+            </c:forEach>
+        </c:otherwise>
+    </c:choose>
 
     <div class="section-header">
         <h2>Mis ofertas</h2>
